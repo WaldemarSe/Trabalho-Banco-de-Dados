@@ -11,3 +11,13 @@ public class SistemaApplication {
 	}
 
 }
+
+/* 
+	PÁGINAS:
+	LOGIN 
+	HOME:
+		-> DATASETS CRIADOS
+		-> DATASETS PÚBLICOS
+		-> CRIAR DATASET
+		-> PERFIL
+*/

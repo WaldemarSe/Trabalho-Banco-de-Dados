@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Dados do Usuário</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #1a2e4c;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .valor {
+            background-color: #f0f4f8;
+            padding: 12px;
+            border-radius: 6px;
+            color: #333;
+        }
+
+        .senha {
+            color: #d9534f;
+            font-family: monospace;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            background-color: #d4edda;
+            color: #155724;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>Dados do Usuário Logado</h1>
+
+        <div class="card">
+
+            <div class="campo">
+                <span class="label">ID</span>
+                <div class="valor" th:text="${usuario.id}"></div>
+            </div>
+
+            <div class="campo">
+                <span class="label">Nome</span>
+                <div class="valor" th:text="${usuario.nome}"></div>
+            </div>
+
+            <div class="campo">
+                <span class="label">Email</span>
+                <div class="valor" th:text="${usuario.email}"></div>
+            </div>
+
+            <div class="campo">
+                <span class="label">Senha</span>
+                <div class="valor senha" th:text="${usuario.senha}"></div>
+            </div>
+
+            <div class="status">
+                Usuário carregado com sucesso na sessão.
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feature Store</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        th, td {
+            text-align: center;
+            padding: 12px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tbody tr:hover {
+            background-color: #e9ffe9;
+        }
+
+        a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #388E3C;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        p a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        p a:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div th:switch="${restaurantes}">
+    <h2 th:case="null">Sem restaurantes registrados.</h2>
+
+    <div th:case="*">
+        <h2>Restaurantes</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Id</th>
+                    <th>Editar</th>
+                    <th>Remover</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="restaurante : ${restaurantes}">
+                    <td>
+                      <a th:href="@{/restaurante/{id}(id=${restaurante.id})}"
+                        style="text-decoration: none; color: #080808; font-weight: bold;">
+                        <span th:text="${restaurante.nome}"></span>
+                      </a>
+                    </td>
+                    <td th:text="${restaurante.id}"></td>
+                    <td><a th:href="@{/editar/{id}(id=${restaurante.id})}">Editar</a></td>
+                    <td><a th:href="@{/remover/{id}(id=${restaurante.id})}">Remover</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><a href="/novo-restaurante">Adicionar</a></p>
+    </div>
+</div>
+
+</body>
+</html>
