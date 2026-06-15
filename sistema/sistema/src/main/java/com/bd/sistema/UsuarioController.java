@@ -35,14 +35,4 @@ public class UsuarioController {
         session.setAttribute("usuario", tentativaLogin.get());
         return "redirect:/home";
     }
-
-    @GetMapping("/home")
-    public String mostrarHome(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-        model.addAttribute("usuario", usuario);
-        return "home";
-    }
 }

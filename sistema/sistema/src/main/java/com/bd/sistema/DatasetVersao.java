@@ -2,17 +2,22 @@ package com.bd.sistema;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;
 
 @Entity
+@Table(name = "dataset_versao", schema = "feature_store")
 public class DatasetVersao {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotBlank(message = "O número da versão não pode ser vazio.")
@@ -68,8 +73,16 @@ public class DatasetVersao {
         return criador;
     }
 
+    public void setCriador(Usuario criador) {
+        this.criador = criador;
+    }
+
     public Dataset getDataset() {
         return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
     }
 
     public byte[] getArquivoCsv() {

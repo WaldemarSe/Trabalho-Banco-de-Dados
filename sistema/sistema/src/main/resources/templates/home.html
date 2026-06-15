@@ -3,100 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Dados do Usuário</title>
+    <title>Dashboard - Feature Store</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #f6f8fa; /* Cor de fundo padrão do GitHub */
             margin: 0;
+            padding: 0;
+            color: #24292f;
+        }
+
+        /* BARRA SUPERIOR (Estilo GitHub Nav) */
+        .barra-superior {
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #d0d7de;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            z-index: 1000;
+        }
+
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #d0d7de;
+        }
+
+        .nome-usuario {
+            font-weight: 600;
+            font-size: 14px;
+            color: #24292f;
+        }
+
+        .acoes-superior {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-novo-dataset {
+            background-color: #1f883d; /* Verde clássico do botão New do GitHub */
+            color: white;
+            border: 1px solid rgba(27, 31, 36, 0.15);
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+            transition: background-color 0.2s;
+        }
+
+        .btn-novo-dataset:hover {
+            background-color: #1a7f37;
+        }
+
+        .link-sair {
+            color: #57606a;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .link-sair:hover {
+            color: #0969da;
+        }
+
+        /* ESTRUTURA PRINCIPAL (Abaixo da navbar) */
+        .layout-principal {
+            display: flex;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* BARRA LATERAL (Estilo Repositories do GitHub) */
+        .barra-lateral {
+            width: 320px;
+            background-color: #ffffff;
+            border-right: 1px solid #d0d7de;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            bottom: 0;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .barra-lateral h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #24292f;
+        }
+
+        .input-filtro {
+            width: 100%;
+            padding: 5px 12px;
+            font-size: 14px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background-color: #f6f8fa;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .input-filtro:focus {
+            background-color: #ffffff;
+            border-color: #0969da;
+            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+        }
+
+        .lista-datasets {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-dataset {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .item-dataset a {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .item-dataset a:hover {
+            text-decoration: underline;
+        }
+
+        /* CONTEÚDO CENTRAL (Feed de Públicos) */
+        .conteudo-centro {
+            margin-left: 320px; /* Abre espaço para a barra lateral fixa */
+            flex-grow: 1;
             padding: 40px;
+            max-width: 850px;
         }
 
-        .container {
-            max-width: 700px;
-            margin: auto;
+        .secao-titulo {
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #d0d7de;
+            padding-bottom: 8px;
         }
 
-        h1 {
-            color: #1a2e4c;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .campo {
-            margin-bottom: 20px;
-        }
-
-        .label {
-            font-weight: bold;
-            color: #555;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .valor {
-            background-color: #f0f4f8;
-            padding: 12px;
+        /* Cards do Feed Central */
+        .feed-card {
+            background-color: #ffffff;
+            border: 1px solid #d0d7de;
             border-radius: 6px;
-            color: #333;
+            padding: 24px;
+            margin-bottom: 16px;
         }
 
-        .senha {
-            color: #d9534f;
-            font-family: monospace;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
         }
 
-        .status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 6px;
-            background-color: #d4edda;
-            color: #155724;
-            text-align: center;
-            font-weight: bold;
+        .dataset-nome {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0969da;
+            text-decoration: none;
+        }
+
+        .dataset-nome:hover {
+            text-decoration: underline;
+        }
+
+        .badge-publico {
+            font-size: 12px;
+            font-weight: 500;
+            color: #57606a;
+            border: 1px solid #d0d7de;
+            border-radius: 2em;
+            padding: 0 7px;
+            display: inline-block;
+            line-height: 18px;
+        }
+
+        .dataset-descricao {
+            font-size: 14px;
+            color: #57606a;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #57606a;
+        }
+
+        .meta-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sem-dados {
+            color: #57606a;
+            font-style: italic;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="barra-superior">
+        <div class="usuario-info">
+            <img class="icon" th:src="@{/perfil_icon.png}" alt="Perfil">
+            <span class="nome-usuario" th:text="${usuario.nome}">Nome do Usuário</span>
+        </div>
+        <div class="acoes-superior">
+            <a href="/novo-dataset" class="btn-novo-dataset">Novo</a>
+            <a href="/logout" class="link-sair">Sair</a>
+        </div>
+    </div>
 
-        <h1>Dados do Usuário Logado</h1>
+    <div class="layout-principal">
 
-        <div class="card">
-
-            <div class="campo">
-                <span class="label">ID</span>
-                <div class="valor" th:text="${usuario.id}"></div>
+        <div class="barra-lateral">
+            <h3>Top datasets</h3>
+            <input type="text" class="input-filtro" placeholder="Find a dataset...">
+            
+            <ul class="lista-datasets" th:if="${not #lists.isEmpty(meusDatasets)}">
+                <li class="item-dataset" th:each="dt : ${meusDatasets}">
+                    <a th:href="@{/datasets/{id}(id=${dt.id})}" th:text="${usuario.nome + '/' + dt.nome}">usuario/nome-dataset</a>
+                </li>
+            </ul>
+            <div class="sem-dados" th:if="${#lists.isEmpty(meusDatasets)}">
+                Você ainda não possui datasets criados.
             </div>
+        </div>
 
-            <div class="campo">
-                <span class="label">Nome</span>
-                <div class="valor" th:text="${usuario.nome}"></div>
+        <div class="conteudo-centro">
+            <h2 class="secao-titulo">Public Feed</h2>
+            
+            <div th:if="${not #lists.isEmpty(datasetsPublicos)}">
+                <div class="feed-card" th:each="dtPub : ${datasetsPublicos}">
+                    <div class="card-header">
+                        <a th:href="@{/datasets/{id}(id=${dtPub.id})}" class="dataset-nome" th:text="${dtPub.nome}">Nome do Dataset</a>
+                        <span class="badge-publico">Public</span>
+                    </div>
+                    
+                    <p class="dataset-descricao" th:text="${dtPub.descricao != null ? dtPub.descricao : 'Sem descrição disponível.'}">Descrição do dataset.</p>
+                    
+                    <div class="card-footer">
+                        <div class="meta-info">
+                            <span>Created by: </span>
+                            <strong th:text="${dtPub.criador.nome}">Autor</strong>
+                        </div>
+                        <div class="meta-info">
+                            <span>• Created at: </span>
+                            <span th:text="${#temporals.format(dtPub.dtCriacao, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="campo">
-                <span class="label">Email</span>
-                <div class="valor" th:text="${usuario.email}"></div>
+            
+            <div class="feed-card" th:if="${#lists.isEmpty(datasetsPublicos)}">
+                <p class="sem-dados">Nenhum dataset público disponível no feed no momento.</p>
             </div>
-
-            <div class="campo">
-                <span class="label">Senha</span>
-                <div class="valor senha" th:text="${usuario.senha}"></div>
-            </div>
-
-            <div class="status">
-                Usuário carregado com sucesso na sessão.
-            </div>
-
         </div>
 
     </div>

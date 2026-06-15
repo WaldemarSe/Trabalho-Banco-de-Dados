@@ -12,17 +12,22 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "dataset", schema = "feature_store")
 public class Dataset {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotBlank(message = "O nome do dataset não pode ser vazio.")
     private String nome;
 
-    @Column(name = "descricao_modificacoes", nullable = true)
+    @Column(name = "descricao", nullable = true)
     private String descricao;
 
     @Column(name = "dt_criacao", updatable = false)
@@ -73,6 +78,10 @@ public class Dataset {
 
     public Usuario getCriador() {
         return criador;
+    }
+
+    public void setCriador(Usuario criador) {
+        this.criador = criador;
     }
 
     public List<DatasetVersao> getVersoes() {
