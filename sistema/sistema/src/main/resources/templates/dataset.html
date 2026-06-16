@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${dataset.nome} + ' - Dataset Details'">Dataset Details</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            color: #24292f;
+        }
+
+        /* BARRA SUPERIOR */
+        .barra-superior {
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #d0d7de;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            z-index: 1000;
+        }
+
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #d0d7de;
+        }
+
+        .nome-usuario {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .link-home {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .link-home:hover {
+            text-decoration: underline;
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .container-detalhes {
+            max-width: 1012px;
+            margin: 90px auto 40px auto;
+            padding: 0 24px;
+        }
+
+        /* CABEÇALHO DO DATASET (Estilo Repo Header do Git) */
+        .header-dataset {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .titulo-repo {
+            font-size: 20px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .autor {
+            color: #0969da;
+            text-decoration: none;
+        }
+
+        .autor:hover {
+            text-decoration: underline;
+        }
+
+        .divisor {
+            color: #57606a;
+        }
+
+        .nome-dataset {
+            font-weight: 600;
+        }
+
+        .badge-visibilidade {
+            font-size: 12px;
+            font-weight: 500;
+            color: #57606a;
+            border: 1px solid #d0d7de;
+            border-radius: 2em;
+            padding: 0 7px;
+            line-height: 18px;
+            margin-left: 8px;
+        }
+
+        /* METADADOS DO DATASET */
+        .meta-dataset {
+            background-color: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .meta-linha {
+            margin-bottom: 8px;
+        }
+
+        .meta-linha:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-rotulo {
+            font-weight: 600;
+            color: #24292f;
+        }
+
+        .meta-valor {
+            color: #57606a;
+        }
+
+        /* SEÇÃO DE VERSÕES */
+        .secao-versoes-titulo {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contador-versoes {
+            background-color: rgba(175, 184, 193, 0.2);
+            color: #24292f;
+            padding: 2px 6px;
+            border-radius: 2em;
+            font-size: 12px;
+        }
+
+        /* LISTA DE VERSÕES (Estilo Releases / Commits do Git) */
+        .tabela-versoes {
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        .item-versao {
+            border-bottom: 1px solid #d0d7de;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-versao:last-child {
+            border-bottom: none;
+        }
+
+        .versao-esquerda {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .versao-tag-linha {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tag-versao {
+            background-color: #ddf4ff;
+            color: #0969da;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 2em;
+            font-family: monospace;
+        }
+
+        .versao-data {
+            font-size: 12px;
+            color: #57606a;
+        }
+
+        .versao-descricao {
+            font-size: 14px;
+            color: #24292f;
+            margin: 4px 0 0 0;
+        }
+
+        /* BOTÕES DE AÇÃO (Estilo GitHub Buttons) */
+        .versao-direta-acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-git {
+            background-color: #f6f8fa;
+            color: #24292f;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+            transition: background-color 0.2s;
+        }
+
+        .btn-git:hover {
+            background-color: #f3f4f6;
+            border-color: #8c959f;
+        }
+
+        .btn-principal {
+            background-color: #1f883d;
+            color: white;
+            border: 1px solid rgba(27, 31, 36, 0.15);
+        }
+
+        .btn-principal:hover {
+            background-color: #1a7f37;
+        }
+
+        .sem-dados {
+            padding: 32px;
+            text-align: center;
+            color: #57606a;
+            font-style: italic;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="barra-superior">
+        <div class="usuario-info">
+            <img class="icon" th:src="@{/perfil_icon.png}" alt="Perfil">
+            <span class="nome-usuario" th:text="${usuario.nome}">Nome do Usuário</span>
+        </div>
+        <a href="/home" class="link-home">Back to Home</a>
+    </div>
+
+    <div class="container-detalhes">
+        
+        <div class="header-dataset">
+            <div class="titulo-repo">
+                <span class="autor" th:text="${dataset.criador.nome}">usuario</span>
+                <span class="divisor">/</span>
+                <span class="nome-dataset" th:text="${dataset.nome}">nome-do-dataset</span>
+                <span class="badge-visibilidade" th:text="${dataset.ePrivado ? 'Private' : 'Public'}">Public</span>
+            </div>
+        </div>
+
+        <div class="meta-dataset">
+            <div class="meta-linha">
+                <span class="meta-rotulo">Description: </span>
+                <span class="meta-valor" th:text="${dataset.descricao != null && !dataset.descricao.empty ? dataset.descricao : 'No description provided.'}">Descrição do dataset.</span>
+            </div>
+            <div class="meta-linha" th:if="${dataset.fontes != null && !dataset.fontes.empty}">
+                <span class="meta-rotulo">Sources: </span>
+                <span class="meta-valor" th:text="${dataset.fontes}">Fontes de dados informadas.</span>
+            </div>
+            <div class="meta-linha">
+                <span class="meta-rotulo">Created on: </span>
+                <span class="meta-valor" th:text="${#temporals.format(dataset.dtCriacao, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+            </div>
+        </div>
+
+        <div class="secao-versoes-titulo">
+            <span>History Versions</span>
+            <span class="contador-versoes" th:text="${#lists.size(versoes)}">0</span>
+        </div>
+
+        <div class="tabela-versoes">
+            <div th:if="${not #lists.isEmpty(versoes)}">
+                <div class="item-versao" th:each="v : ${versoes}">
+                    
+                    <div class="versao-esquerda">
+                        <div class="versao-tag-linha">
+                            <span class="tag-versao" th:text="${v.numVersao}">v1.0</span>
+                            <span class="versao-data" th:text="'released this on ' + ${#temporals.format(v.dtCriacao, 'dd/MM/yyyy HH:mm')}">Data</span>
+                        </div>
+                        <p class="versao-descricao" th:text="${v.descricaoModificacoes}">Descrição das alterações feitas nesta versão.</p>
+                    </div>
+
+                    <div class="versao-direta-acoes">
+                        <a th:href="@{/dataset/versao/{id}/download(id=${v.id})}" class="btn-git">
+                            💾 Download CSV
+                        </a>
+                        <a th:href="@{/dataset/{datasetId}/nova-versao(datasetId=${dataset.id}, baseId=${v.id})}" class="btn-git btn-principal">
+                            🌿 Use as base
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="sem-dados" th:if="${#lists.isEmpty(versoes)}">
+                No versions recorded for this dataset.
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

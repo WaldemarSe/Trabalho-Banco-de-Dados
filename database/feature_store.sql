@@ -15,6 +15,7 @@ CREATE TABLE feature_store.dataset (
     id SERIAL,
     nome VARCHAR(100) NOT NULL,
     descricao VARCHAR(255), 
+    fontes VARCHAR(255), 
     dt_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     e_privado BOOLEAN NOT NULL DEFAULT TRUE,
     criador_id INT NOT NULL,

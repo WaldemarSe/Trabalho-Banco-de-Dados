@@ -1,51 +1,32 @@
 package com.bd.sistema;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.JoinColumn;
 import java.util.List;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "dataset", schema = "feature_store")
 public class Dataset {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank(message = "O nome do dataset não pode ser vazio.")
     private String nome;
 
-    @Column(name = "descricao", nullable = true)
     private String descricao;
 
-    @Column(name = "dt_criacao", updatable = false)
-    @CreationTimestamp
+    private String fontes;
+
     private LocalDateTime dtCriacao;
 
-    @Column(name = "e_privado")
     private Boolean ePrivado;
 
-    @ManyToOne
-    @JoinColumn(name = "criador_id", nullable = false)
     private Usuario criador;
 
-    @OneToMany(mappedBy = "dataset", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DatasetVersao> versoes;
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNome() {
@@ -64,8 +45,20 @@ public class Dataset {
         this.descricao = descricao;
     }
 
+    public String getFontes() {
+        return fontes;
+    }
+
+    public void setFontes(String fontes) {
+        this.fontes = fontes;
+    }
+
     public LocalDateTime getDtCriacao() {
         return dtCriacao;
+    }
+
+    public void setDtCriacao(LocalDateTime dtCriacao) {
+        this.dtCriacao = dtCriacao;
     }
 
     public Boolean getEPrivado() {

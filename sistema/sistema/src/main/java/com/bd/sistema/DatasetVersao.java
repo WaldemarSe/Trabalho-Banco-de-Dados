@@ -1,52 +1,31 @@
 package com.bd.sistema;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.JoinColumn;
 
-@Entity
-@Table(name = "dataset_versao", schema = "feature_store")
 public class DatasetVersao {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank(message = "O número da versão não pode ser vazio.")
     private String numVersao;
 
-    @Column(name = "descricao_modificacoes", nullable = true)
     private String descricaoModificacoes;
 
-    @Column(name = "dt_criacao", updatable = false)
-    @CreationTimestamp
     private LocalDateTime dtCriacao;
 
-    @ManyToOne
-    @JoinColumn(name = "conta_id", nullable = false)
     private Usuario criador;
 
-    @ManyToOne
-    @JoinColumn(name = "dataset_id", nullable = false)
     private Dataset dataset;
 
-    @Column(name = "arquivo_csv", nullable = false)
     private byte[] arquivoCsv;
 
-    @ManyToOne
-    @JoinColumn(name = "versao_base_id", nullable = true)
     private DatasetVersao versaoBase;
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNumVersao() {
@@ -67,6 +46,10 @@ public class DatasetVersao {
 
     public LocalDateTime getDtCriacao() {
         return dtCriacao;
+    }
+
+    public void setDtCriacao(LocalDateTime dtCriacao) {
+        this.dtCriacao = dtCriacao;
     }
 
     public Usuario getCriador() {
@@ -95,5 +78,9 @@ public class DatasetVersao {
 
     public DatasetVersao getVersaoBase() {
         return versaoBase;
+    }
+
+    public void setVersaoBase(DatasetVersao versaoBase) {
+        this.versaoBase = versaoBase;
     }
 }

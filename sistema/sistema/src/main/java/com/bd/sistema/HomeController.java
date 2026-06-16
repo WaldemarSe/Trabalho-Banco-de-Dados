@@ -22,7 +22,7 @@ public class HomeController {
             return "redirect:/login";
         }
 
-        List<Dataset> datasetsPermitidos = datasetRepository.BuscarPorCriadorOuPublico(usuarioLogado.getId());
+        List<Dataset> datasetsPermitidos = datasetRepository.buscarPorCriadorOuPublico(usuarioLogado);
 
         model.addAttribute("usuario", usuarioLogado);
         model.addAttribute("meusDatasets", datasetsPermitidos.stream()

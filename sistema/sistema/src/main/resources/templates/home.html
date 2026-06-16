@@ -260,7 +260,7 @@
             
             <ul class="lista-datasets" th:if="${not #lists.isEmpty(meusDatasets)}">
                 <li class="item-dataset" th:each="dt : ${meusDatasets}">
-                    <a th:href="@{/datasets/{id}(id=${dt.id})}" th:text="${usuario.nome + '/' + dt.nome}">usuario/nome-dataset</a>
+                    <a th:href="@{/dataset/{id}(id=${dt.id})}" th:text="${usuario.nome + '/' + dt.nome}">usuario/nome-dataset</a>
                 </li>
             </ul>
             <div class="sem-dados" th:if="${#lists.isEmpty(meusDatasets)}">
@@ -274,7 +274,7 @@
             <div th:if="${not #lists.isEmpty(datasetsPublicos)}">
                 <div class="feed-card" th:each="dtPub : ${datasetsPublicos}">
                     <div class="card-header">
-                        <a th:href="@{/datasets/{id}(id=${dtPub.id})}" class="dataset-nome" th:text="${dtPub.nome}">Nome do Dataset</a>
+                        <a th:href="@{/dataset/{id}(id=${dtPub.id})}" class="dataset-nome" th:text="${dtPub.nome}">Nome do Dataset</a>
                         <span class="badge-publico">Public</span>
                     </div>
                     
