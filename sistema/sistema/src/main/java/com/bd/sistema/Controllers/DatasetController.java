@@ -1,6 +1,5 @@
-package com.bd.sistema;
+package com.bd.sistema.Controllers;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,11 +9,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.bd.sistema.Models.Dataset;
+import com.bd.sistema.Models.DatasetVersao;
+import com.bd.sistema.Models.Usuario;
+import com.bd.sistema.Repositories.DatasetRepository;
+import com.bd.sistema.Repositories.DatasetVersaoRepository;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 import java.io.IOException;
 
-@Controller
+@RestController
+@RequestMapping("/api/dataset")
+@CrossOrigin(origins = "*")
 public class DatasetController {
     
     @Autowired
@@ -95,5 +110,22 @@ public class DatasetController {
         }
     }
 
-    
+    @PostMapping("/listar-datasets-visiveis")
+    public ResponseEntity<?> listarDatasetsVisiveis(@RequestBody Map<String, Object> payload) {
+
+        if (payload == null || payload.get("id") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
+        }
+
+        try {
+            int idUsuario = Integer.parseInt(payload.get("id").toString());
+
+            List<Map<String, Object>> datasetsPermitidos = datasetRepository.buscarPorCriadorOuPublico(idUsuario);
+
+            return ResponseEntity.ok(datasetsPermitidos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro ao carregar dados do banco."));
+        }
+    }
 }

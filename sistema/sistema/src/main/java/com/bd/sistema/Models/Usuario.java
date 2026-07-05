@@ -1,4 +1,4 @@
-package com.bd.sistema;
+package com.bd.sistema.Models;
 
 public class Usuario {
     

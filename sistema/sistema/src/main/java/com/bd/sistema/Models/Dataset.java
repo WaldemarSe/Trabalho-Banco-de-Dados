@@ -1,4 +1,4 @@
-package com.bd.sistema;
+package com.bd.sistema.Models;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,9 +1,12 @@
-package com.bd.sistema;
+package com.bd.sistema.Repositories;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import com.bd.sistema.Models.Usuario;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -20,7 +23,7 @@ public class UsuarioRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, usuario.getNome(), usuario.getSenha(), usuario.getEmail(), false);
     }
 
-    Optional<Usuario> buscarPorEmailESenha(String email, String senha){
+    public Optional<Usuario> buscarPorEmailESenha(String email, String senha){
         String sql = "SELECT * FROM feature_store.conta WHERE email = ? AND senha = ?";
         try {
             Usuario usuario = jdbcTemplate.queryForObject(sql, new UsuarioRowMapper(), email, senha);

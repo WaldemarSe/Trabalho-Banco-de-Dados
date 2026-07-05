@@ -1,8 +1,12 @@
-package com.bd.sistema;
+package com.bd.sistema.Repositories;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import com.bd.sistema.Models.Dataset;
+import com.bd.sistema.Models.DatasetVersao;
+
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,12 +1,17 @@
-package com.bd.sistema;
+package com.bd.sistema.Repositories;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.bd.sistema.Models.Dataset;
+import com.bd.sistema.Models.Usuario;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class DatasetRepository { 
@@ -20,12 +25,12 @@ public class DatasetRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, dataset.getNome(), dataset.getDescricao(), dataset.getFontes(), dataset.getEPrivado(), dataset.getCriador().getId());
     }
 
-    public List<Dataset> buscarPorCriadorOuPublico(Usuario criador) {
+    public List<Map<String, Object>> buscarPorCriadorOuPublico(int usuarioId) {
         String sql = "SELECT d.*, c.nome AS nome_criador " +
                      "FROM feature_store.dataset d " +
                      "JOIN feature_store.conta c ON d.criador_id = c.id " +
                      "WHERE d.criador_id = ? OR d.e_privado = false";
-        return jdbcTemplate.query(sql, new DatasetRowMapper(), criador.getId());
+        return jdbcTemplate.queryForList(sql, usuarioId);
     }
 
     public Dataset buscarPorId(int id) {
