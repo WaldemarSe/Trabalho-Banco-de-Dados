@@ -91,29 +91,6 @@ public class DatasetController {
         }
     }
 
-    @GetMapping("/versao/{idVersao}/download")
-    public ResponseEntity<byte[]> baixarArquivoCsv(@PathVariable("idVersao") int idVersao) {
-        try {
-            DatasetVersao versao = datasetVersaoRepository.buscarArquivoPorId(idVersao);
-            
-            if (versao == null || versao.getArquivoCsv() == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            String nomeArquivo = versao.getDataset().getNome().replaceAll("[^a-zA-Z0-9.-]", "_") 
-                                 + "_" + versao.getNumVersao() + ".csv";
-
-            return ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment; filename=\"" + nomeArquivo + "\"")
-                    .header("Content-Type", "text/csv; charset=utf-8")
-                    .body(versao.getArquivoCsv());
-                    
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
     @PostMapping(value = "/criar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> criarDatasetComVersaoInicial(DatasetDTO form) {

@@ -120,7 +120,7 @@ function CriarVersao() {
       {/* ── CORPO DO FORMULÁRIO ── */}
       <main className="flex-1 max-w-200 w-full mx-auto px-4 py-8 flex flex-col gap-4">
         <div>
-          <Link to={`/dataset/detalhes/${id}`} className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
+          <Link to={`/dataset/${id}`} className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
             Voltar
           </Link>
           <h1 className="text-2xl font-bold mt-2 text-[#1f2328]">Nova Versão do Dataset</h1>
@@ -200,7 +200,7 @@ function CriarVersao() {
           {/* BOTÕES DE SUBMIT */}
           <div className="border-t border-gray-100 pt-4 flex justify-end gap-3">
             <Link 
-              to={`/dataset/detalhes/${id}`}
+              to={`/dataset/${id}`}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-[#d0d7de] rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancelar

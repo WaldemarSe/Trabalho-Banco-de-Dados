@@ -51,12 +51,25 @@ function Dataset() {
   }
 
   // Abre/Fecha a seção de features e histórico de modificações
-  const toggleVersao = (versaoId) => {
+  const toggleVersao = async (versaoId) => {
+    const estaAbrindo = !versoesAbertas[versaoId];
+
+    // Atualiza o estado visual imediatamente para não travar a tela do usuário
     setVersoesAbertas(prev => ({
       ...prev,
-      [versaoId]: !prev[versaoId]
+      [versaoId]: estaAbrindo
     }))
-  }
+
+    // Se o usuário está abrindo o painel, enviamos o registro de visualização pro Java
+    if (estaAbrindo && usuario) {
+      try {
+        await axios.post(`${API_URL}/dataset/versao/${versaoId}/visualizar?contaId=${usuario.id}`)
+      } catch (err) {
+        console.error("Erro silencioso ao registrar visualização:", err)
+        // Não exibimos erro na tela para o usuário para não estragar a experiência dele
+      }
+    }
+}
 
   if (carregando) {
     return (
@@ -180,8 +193,6 @@ function Dataset() {
                       </div>
 
                       <div className="flex items-center gap-2">
-
-                        {/* BOTÃO NOVO ADICIONADO AQUI */}
                         <Link
                             to={`/dataset/${id}/versao/nova?baseId=${versao.id}&numBase=${versao.numVersao}`}
                             className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 px-3 py-1.5 rounded-md font-medium shadow-3xs transition-colors cursor-pointer"
@@ -191,19 +202,7 @@ function Dataset() {
                             </svg>
                             Nova Versão
                         </Link>
-
-                        {/* Botão de Download */}
-                        <a
-                          href={`${API_URL}/dataset/versao/${versao.id}/download`}
-                          download
-                          className="flex items-center gap-1.5 text-xs text-slate-700 bg-[#f6f8fa] hover:bg-[#f3f4f6] border border-[#d0d7de] px-3 py-1.5 rounded-md font-medium shadow-3xs transition-colors cursor-pointer"
-                        >
-                          <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                          </svg>
-                          Download CSV
-                        </a>
-
+                        
                         {/* Botão "..." Reticências */}
                         <button
                           onClick={() => toggleVersao(versao.id)}
@@ -218,19 +217,35 @@ function Dataset() {
                       </div>
                     </div>
 
-                    {/* detalhes da versão */}
+                    {/* DETALHES DA VERSÃO (Aparecem ao clicar em "...") */}
                     {estaAberto && (
                       <div className="border-t border-gray-100 bg-slate-50/60 p-5 flex flex-col gap-4">
                         
-                        {/* Modificações na versão */}
-                        <div>
-                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Modificações</h4>
-                          <p className="text-sm text-gray-600 bg-white p-3 rounded border border-gray-200">
-                            {versao.descricaoModificacoes || "Sem nota de modificação registrada."}
-                          </p>
+                        {/* Seção das notas de Modificação e do Botão de Download Oculto */}
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Modificações</h4>
+                            <p className="text-sm text-gray-600 bg-white p-3 rounded border border-gray-200">
+                              {versao.descricaoModificacoes || "Sem nota de modificação registrada."}
+                            </p>
+                          </div>
+                          
+                          {/* 📥 O BOTÃO DE DOWNLOAD FOI AJUSTADO E SECOLOCOU AQUI DENTRO */}
+                          <div className="sm:mt-5">
+                            <a
+                              href={`${API_URL}/dataset/versao/${versao.id}/download?contaId=${usuario.id}`}
+                              download
+                              className="flex items-center justify-center gap-1.5 text-xs text-slate-700 bg-white hover:bg-[#f6f8fa] border border-[#d0d7de] px-4 py-2.5 rounded-md font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap w-full sm:w-auto"
+                            >
+                              <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                              </svg>
+                              Download CSV
+                            </a>
+                          </div>
                         </div>
 
-                        {/* Lista de Features */}
+                        {/* Lista de Features (Mantida igual ao seu código original) */}
                         <div>
                           <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Features</h4>
                           {versao.features && versao.features.length > 0 ? (

@@ -16,6 +16,8 @@ import com.bd.sistema.Models.DatasetVersao;
 import com.bd.sistema.Models.Usuario;
 import com.bd.sistema.Repositories.DatasetRepository;
 import com.bd.sistema.Repositories.DatasetVersaoRepository;
+import com.bd.sistema.Repositories.VisualizacaoRepository;
+import com.bd.sistema.Repositories.DownloadRepository;
 
 import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpSession;
@@ -38,13 +40,14 @@ public class DatasetVersaoController {
     @Autowired
     DatasetRepository datasetRepository;
 
-    @GetMapping("/dataset/versao/{id}/download")
-    public ResponseEntity<byte[]> baixarCsv(@PathVariable("id") int id, HttpSession session) {
-        
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
-        if (usuarioLogado == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    @Autowired
+    DownloadRepository downloadRepository;
+
+    @Autowired
+    VisualizacaoRepository visualizacaoRepository;
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> baixarCsv(@PathVariable("id") int id, @RequestParam("contaId") int contaId) { 
 
         try {
             DatasetVersao versao = datasetVersaoRepository.buscarArquivoPorId(id);
@@ -53,12 +56,14 @@ public class DatasetVersaoController {
                 return ResponseEntity.notFound().build();
             }
 
-            String nomeArquivo = versao.getDataset().getNome() + "_" + versao.getNumVersao() + ".csv";
+            String nomeArquivo = versao.getDataset().getNome().replaceAll("[^a-zA-Z0-9.-]", "_") + "_" + versao.getNumVersao() + ".csv";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType("text/csv"));
             headers.setContentDispositionFormData("attachment", nomeArquivo);
             headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+            downloadRepository.save(contaId, id); 
 
             return new ResponseEntity<>(versao.getArquivoCsv(), headers, HttpStatus.OK);
 
@@ -119,6 +124,19 @@ public class DatasetVersaoController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erro interno ao persistir a versão no banco de dados."));
+        }
+    }
+
+    @PostMapping("/{versaoId}/visualizar")
+    public ResponseEntity<?> registrarVisualizacao(@PathVariable int versaoId, @RequestParam int contaId) {
+        try {
+            // registra a visualização
+            visualizacaoRepository.save(contaId, versaoId);
+            return ResponseEntity.ok(Map.of("message", "Visualização registrada com sucesso!"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro ao registrar a visualização."));
         }
     }
 }
