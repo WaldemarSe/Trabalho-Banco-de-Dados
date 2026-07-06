@@ -40,7 +40,6 @@ function Registro() {
   }
 
   return (
-    // Centralização total na tela usando Flexbox do Tailwind
     <div className="w-full h-screen bg-white flex justify-center items-center font-sans">
       
       <div className="w-full max-width-[380px] px-5 py-5 text-left">
@@ -48,7 +47,7 @@ function Registro() {
           REGISTRO
         </h1>
 
-        {/* Mensagem de Erro Estilizada */}
+        {/* Mensagem de Erro */}
         {erro && (
           <div className="bg-[#ffebe9] text-[#cf222e] border border-[rgba(255,129,130,0.4)] p-3 rounded-md text-sm font-medium mb-5">
             {erro}
@@ -56,7 +55,6 @@ function Registro() {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Campo Nome */}
           <div className="flex flex-col mb-5">
             <label htmlFor="nome" className="block mb-2 color-[#555555] text-sm">
               Nome
@@ -73,7 +71,6 @@ function Registro() {
             />
           </div>
 
-          {/* Campo Email */}
           <div className="flex flex-col mb-5">
             <label htmlFor="email" className="block mb-2 color-[#555555] text-sm">
               Email
@@ -90,7 +87,6 @@ function Registro() {
             />
           </div>
 
-          {/* Campo Senha */}
           <div className="flex flex-col mb-5">
             <label htmlFor="senha" className="block mb-2 color-[#555555] text-sm">
               Senha
@@ -106,7 +102,7 @@ function Registro() {
             />
           </div>
 
-          {/* Botão de Envio */}
+          {/* Botão de criar */}
           <button
             type="submit"
             className="w-full p-3 bg-[#1F883D] hover:bg-[#1F883D] text-white rounded-md text-base font-medium mt-2.5 transition-colors duration-200 cursor-pointer"

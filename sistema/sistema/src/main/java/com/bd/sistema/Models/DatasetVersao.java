@@ -1,5 +1,6 @@
 package com.bd.sistema.Models;
 
+import java.util.List;
 import java.time.LocalDateTime;
 
 public class DatasetVersao {
@@ -19,6 +20,8 @@ public class DatasetVersao {
     private byte[] arquivoCsv;
 
     private DatasetVersao versaoBase;
+
+    private List<Feature> features;
 
     public int getId() {
         return id;
@@ -82,5 +85,13 @@ public class DatasetVersao {
 
     public void setVersaoBase(DatasetVersao versaoBase) {
         this.versaoBase = versaoBase;
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<Feature> features) {
+        this.features = features;
     }
 }

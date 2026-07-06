@@ -56,10 +56,10 @@ function Home() {
   return (
     <div className="min-h-screen bg-[#f6f8fa] text-[#1f2328] font-sans flex flex-col">
       
-      {/* ── BARRA SUPERIOR (NAVBAR ESTILO GITHUB) ── */}
+      {/* barra superior */}
       <header className="bg-[#1a2e4c] text-white px-6 py-3 flex justify-between items-center border-b border-[#d0d7de] shadow-sm">
         <div className="flex items-center gap-3">
-          {/* Ícone de Banco de Dados representando a Feature Store */}
+          {/* Ícone de Banco de Dados */}
           <svg className="w-6 h-6 text-[#00a2ed]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4"></path>
           </svg>
@@ -69,7 +69,7 @@ function Home() {
         {/* Seção do Usuário na Direita */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {/* Ícone padrão de foto redondo */}
+            {/* Ícone padrão de foto */}
             <div className="w-8 h-8 rounded-full bg-[#00a2ed] flex items-center justify-center text-white font-bold text-sm uppercase border border-white/20">
               {usuario.nome.charAt(0)}
             </div>
@@ -85,14 +85,14 @@ function Home() {
         </div>
       </header>
 
-      {/* ── CORPO PRINCIPAL DO SITE (GRID GITHUB) ── */}
+      {/* corpo principal */}
       <div className="flex-1 flex flex-col md:flex-row max-w-350 w-full mx-auto px-4 py-8 gap-8">
         
-        {/* BARRA LATERAL ESQUERDA (MEUS DATASETS) */}
+        {/* barra lateral (meus datasets) */}
         <aside className="w-full md:w-72 shrink-0 flex flex-col gap-4 bg-white p-4 rounded-lg border border-[#d0d7de]">
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-sm text-[#1f2328]">Seus Datasets</h2>
-            {/* Botão verde clássico do GitHub */}
+            
             <Link 
               to="/dataset/novo" 
               className="bg-[#1f883d] hover:bg-[#1a7132] text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-sm transition-colors cursor-pointer"
@@ -101,10 +101,10 @@ function Home() {
             </Link>
           </div>
 
-          {/* Input de Filtro rápido */}
+          {/* Input de filtro */}
           <input
             type="text"
-            placeholder="Filtrar seus datasets..."
+            placeholder="Buscar datasets..."
             value={buscaMeusDatasets}
             onChange={(e) => setBuscaMeusDatasets(e.target.value)}
             className="w-full px-3 py-1.5 border border-[#d0d7de] rounded-md text-sm outline-none bg-[#f6f8fa] focus:bg-white focus:border-[#00a2ed] focus:ring-1 focus:ring-[#00a2ed] transition-all"
@@ -133,11 +133,11 @@ function Home() {
           </div>
         </aside>
 
-        {/* FEED CENTRAL (DATASETS PÚBLICOS DE OUTROS) */}
+        {/* feed (datasets públicos) */}
         <main className="flex-1 min-w-0 bg-white p-6 rounded-lg border border-[#d0d7de]">
           <div className="border-b border-[#d0d7de] pb-3 mb-6">
             <h2 className="font-bold text-xl text-[#1f2328]">Explorar Datasets Públicos</h2>
-            <p className="text-xs text-gray-500 mt-1">Veja o que a comunidade está publicando na Feature Store</p>
+            <p className="text-xs text-gray-500 mt-1">Datasets publicados pela comunidade</p>
           </div>
 
           {/* Cards do Feed */}
@@ -176,10 +176,7 @@ function Home() {
 
                 {/* Rodapé do Card */}
                 <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                    <span>Disponível</span>
-                  </div>
+                  
                   <span>Criado em: {ds.dt_criacao ? new Date(ds.dt_criacao).toLocaleDateString('pt-BR') : 'N/A'}</span>
                 </div>
               </div>

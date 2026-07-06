@@ -9,6 +9,7 @@ import './App.css'
 import Registro from './pages/Registro'
 import Login from './pages/Login'
 import Home from './pages/Home'
+import Dataset from './pages/Dataset'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/dataset/:id" element={<Dataset />} />
       </Routes>
     </BrowserRouter>
   )

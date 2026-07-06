@@ -21,8 +21,13 @@ import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
-@Controller
+@RestController
+@RequestMapping("/api/dataset")
+@CrossOrigin(origins = "*")
 public class DatasetVersaoController {
     
     @Autowired
@@ -30,25 +35,6 @@ public class DatasetVersaoController {
 
     @Autowired
     DatasetRepository datasetRepository;
-
-    @GetMapping("dataset/{idDataset}/nova-versao")
-    public String mostrarFormNovaVersao(@PathVariable("idDataset") int idDataset, @RequestParam(value = "baseId", required = false)Integer baseId, HttpSession session, Model model) {
-
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
-
-        if (usuarioLogado == null) {
-            return "redirect:/home";
-        }
-
-        Dataset dataset = datasetRepository.buscarPorId(idDataset);
-
-        model.addAttribute("usuario", usuarioLogado);
-        model.addAttribute("dataset", dataset);
-        model.addAttribute("novaVersao", new DatasetVersao());
-        model.addAttribute("baseId", baseId);
-
-        return "nova-versao"; 
-    }
 
     @PostMapping("/dataset/{idDataset}/criar-versao")
     public String criarVersao(@PathVariable("idDataset") int idDataset, @RequestParam("arquivo") MultipartFile arquivo, 

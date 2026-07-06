@@ -26,8 +26,9 @@ public class DatasetVersaoRepository {
     }
 
     public List<DatasetVersao> buscarVersoesPorIdDataset(int idDataset) {
-        String sql = "SELECT * FROM feature_store.dataset_versao " + 
-                     "WHERE dataset_id = ? ORDER BY dt_criacao DESC";
+        String sql = "SELECT v.id, v.num_versao, v.descricao_modificacoes, v.dt_criacao, v.conta_id, v.dataset_id, v.versao_base_id " +
+                     "FROM feature_store.dataset_versao v " + 
+                     "WHERE v.dataset_id = ? ORDER BY v.dt_criacao DESC";
         
         return jdbcTemplate.query(sql, new DatasetVersaoRowMapper(), idDataset);
     }
@@ -61,7 +62,6 @@ public class DatasetVersaoRepository {
             if (rs.getTimestamp("dt_criacao") != null) {
                 versao.setDtCriacao(rs.getTimestamp("dt_criacao").toLocalDateTime());
             }
-            versao.setArquivoCsv(rs.getBytes("arquivo_csv"));
 
             return versao;
         }

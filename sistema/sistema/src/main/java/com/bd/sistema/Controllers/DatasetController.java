@@ -13,7 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.bd.sistema.Models.Dataset;
 import com.bd.sistema.Models.DatasetVersao;
 import com.bd.sistema.Models.Usuario;
+import com.bd.sistema.Models.Feature;
 import com.bd.sistema.Repositories.DatasetRepository;
+import com.bd.sistema.Repositories.FeatureRepository;
 import com.bd.sistema.Repositories.DatasetVersaoRepository;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import java.util.Map;
+import com.bd.sistema.dto.IdUsuarioDTO;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
@@ -38,87 +41,45 @@ public class DatasetController {
     @Autowired
     private DatasetVersaoRepository datasetVersaoRepository;
 
-    @GetMapping("/novo-dataset")
-    public String mostrarFormCriacaoDataset(HttpSession session, Model model) {
-        
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
+    @Autowired
+    private FeatureRepository featureRepository;
 
-        if (usuarioLogado == null) {
-            return "redirect:/home";
-        }
-
-        model.addAttribute("usuario", usuarioLogado);
-        model.addAttribute("dataset", new Dataset());
-        model.addAttribute("versaoInicial", new DatasetVersao());
-
-        return "novo-dataset";
-    }
-
-    @PostMapping("/criar-dataset")
-    @Transactional
-    public String criarDataset(HttpSession session, Dataset dataset, DatasetVersao versaoInicial, @RequestParam("arquivo") MultipartFile arquivo) {
-        
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
-
-        if (usuarioLogado == null) {
-            return "redirect:/home";
-        }
-
-        try {
-            dataset.setCriador(usuarioLogado);
-            int idNovoDataset = datasetRepository.save(dataset);
-            dataset.setId(idNovoDataset);
-
-            versaoInicial.setDataset(dataset);
-            versaoInicial.setCriador(usuarioLogado);
-            versaoInicial.setArquivoCsv(arquivo.getBytes());
-            datasetVersaoRepository.save(versaoInicial);
-
-            return "redirect:/home";
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "redirect:/novo-dataset?error=Erro processar arquivo CSV.";
-        }
-    }
-
-    @GetMapping("/dataset/{id}")
-    public String mostrarDetalhesDataset(@PathVariable("id") int id, HttpSession session, Model model) {
-        
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
-
-        if (usuarioLogado == null) {
-            return "redirect:/home";
-        }
-
+    @GetMapping("/detalhes/{id}")
+    public ResponseEntity<?> mostrarDetalhesDataset(@PathVariable("id") int id) {
         try {
             Dataset dataset = datasetRepository.buscarPorId(id);
 
-            if (dataset.getCriador().getId() != usuarioLogado.getId() && dataset.getEPrivado()) {
-                return "redirect:/home";
-            }
-
             List<DatasetVersao> versoes = datasetVersaoRepository.buscarVersoesPorIdDataset(dataset.getId());
 
-            model.addAttribute("usuario", usuarioLogado);
-            model.addAttribute("dataset", dataset);
-            model.addAttribute("versoes", versoes);
+            for (DatasetVersao versao : versoes) {
+                List<Feature> features = featureRepository.buscarFeaturesPorIdVersao(versao.getId());
+                versao.setFeatures(features);
+            }
 
-            return "dataset";
+            Map<String, Object> response = Map.of(
+                "dataset", dataset,
+                "versoes", versoes
+            );
+
+            return ResponseEntity.ok(response);
+
         } catch (EmptyResultDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Dataset não encontrado."));
+        } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/home?error=Dataset não encontrado.";
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro ao carregar dados do banco."));
         }
     }
 
     @PostMapping("/listar-datasets-visiveis")
-    public ResponseEntity<?> listarDatasetsVisiveis(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> listarDatasetsVisiveis(@RequestBody IdUsuarioDTO idRequest) {
 
-        if (payload == null || payload.get("id") == null) {
+        if (idRequest == null || idRequest.id() == 0) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
         }
 
         try {
-            int idUsuario = Integer.parseInt(payload.get("id").toString());
+            int idUsuario = idRequest.id();
 
             List<Map<String, Object>> datasetsPermitidos = datasetRepository.buscarPorCriadorOuPublico(idUsuario);
 
@@ -126,6 +87,31 @@ public class DatasetController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "Erro ao carregar dados do banco."));
+        }
+    }
+
+    @GetMapping("/versao/{idVersao}/download")
+    public ResponseEntity<byte[]> baixarArquivoCsv(@PathVariable("idVersao") int idVersao) {
+        try {
+            // Busca a versão com o array de bytes e o nome do dataset vinculados
+            DatasetVersao versao = datasetVersaoRepository.buscarArquivoPorId(idVersao);
+            
+            if (versao == null || versao.getArquivoCsv() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Sanitiza o nome do arquivo (ex: "Dataset_de_Clientes_v1.0.csv")
+            String nomeArquivo = versao.getDataset().getNome().replaceAll("[^a-zA-Z0-9.-]", "_") 
+                                 + "_" + versao.getNumVersao() + ".csv";
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + nomeArquivo + "\"")
+                    .header("Content-Type", "text/csv; charset=utf-8")
+                    .body(versao.getArquivoCsv());
+                    
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
