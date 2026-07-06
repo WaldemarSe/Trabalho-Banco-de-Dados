@@ -180,6 +180,18 @@ function Dataset() {
                       </div>
 
                       <div className="flex items-center gap-2">
+
+                        {/* BOTÃO NOVO ADICIONADO AQUI */}
+                        <Link
+                            to={`/dataset/${id}/versao/nova?baseId=${versao.id}&numBase=${versao.numVersao}`}
+                            className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 px-3 py-1.5 rounded-md font-medium shadow-3xs transition-colors cursor-pointer"
+                        >
+                            <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Nova Versão
+                        </Link>
+
                         {/* Botão de Download */}
                         <a
                           href={`${API_URL}/dataset/versao/${versao.id}/download`}

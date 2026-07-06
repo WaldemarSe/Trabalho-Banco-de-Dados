@@ -10,6 +10,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bd.sistema.dto.DatasetDTO;
 import com.bd.sistema.Models.Dataset;
 import com.bd.sistema.Models.DatasetVersao;
 import com.bd.sistema.Models.Usuario;
@@ -93,14 +94,12 @@ public class DatasetController {
     @GetMapping("/versao/{idVersao}/download")
     public ResponseEntity<byte[]> baixarArquivoCsv(@PathVariable("idVersao") int idVersao) {
         try {
-            // Busca a versão com o array de bytes e o nome do dataset vinculados
             DatasetVersao versao = datasetVersaoRepository.buscarArquivoPorId(idVersao);
             
             if (versao == null || versao.getArquivoCsv() == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Sanitiza o nome do arquivo (ex: "Dataset_de_Clientes_v1.0.csv")
             String nomeArquivo = versao.getDataset().getNome().replaceAll("[^a-zA-Z0-9.-]", "_") 
                                  + "_" + versao.getNumVersao() + ".csv";
 
@@ -112,6 +111,51 @@ public class DatasetController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping(value = "/criar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> criarDatasetComVersaoInicial(DatasetDTO form) {
+        try {
+            if (form.arquivo() == null || form.arquivo().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "O arquivo CSV inicial é obrigatório."));
+            }
+
+            Dataset novoDataset = new Dataset();
+            novoDataset.setNome(form.nome());
+            novoDataset.setDescricao(form.descricao());
+            novoDataset.setFontes(form.fontes());
+            novoDataset.setEPrivado(form.ePrivado());
+            
+            Usuario criador = new Usuario();
+            criador.setId(form.contaId());
+            novoDataset.setCriador(criador);
+
+            // Salva o dataset e pega o ID gerado pelo banco
+            int datasetIdGerado = datasetRepository.save(novoDataset); 
+            novoDataset.setId(datasetIdGerado);
+
+            // 3. Monta a Versão Inicial
+            DatasetVersao versaoInicial = new DatasetVersao();
+            versaoInicial.setNumVersao(form.numVersao());
+            versaoInicial.setDescricaoModificacoes(form.descricaoModificacoes());
+            versaoInicial.setCriador(criador);
+            versaoInicial.setDataset(novoDataset);
+            versaoInicial.setArquivoCsv(form.arquivo().getBytes()); 
+            versaoInicial.setVersaoBase(null);
+
+            // Salva a versão no banco
+            datasetVersaoRepository.save(versaoInicial);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Dataset e versão criados com sucesso!"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro ao processar os bytes do arquivo CSV."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao salvar no banco de dados."));
         }
     }
 }

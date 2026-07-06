@@ -10,6 +10,8 @@ import Registro from './pages/Registro'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import Dataset from './pages/Dataset'
+import CriarDataset from './pages/CriarDataset'
+import CriarVersao from './pages/CriarVersao'
 
 function App() {
 
@@ -21,6 +23,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/dataset/:id" element={<Dataset />} />
+        <Route path="/dataset/novo" element={<CriarDataset />} />
+        <Route path="/dataset/:id/versao/nova" element={<CriarVersao />} />
       </Routes>
     </BrowserRouter>
   )

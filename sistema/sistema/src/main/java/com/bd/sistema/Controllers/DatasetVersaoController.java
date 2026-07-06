@@ -24,9 +24,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import com.bd.sistema.dto.VersaoDTO;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/dataset")
+@RequestMapping("/api/dataset/versao")
 @CrossOrigin(origins = "*")
 public class DatasetVersaoController {
     
@@ -35,37 +37,6 @@ public class DatasetVersaoController {
 
     @Autowired
     DatasetRepository datasetRepository;
-
-    @PostMapping("/dataset/{idDataset}/criar-versao")
-    public String criarVersao(@PathVariable("idDataset") int idDataset, @RequestParam("arquivo") MultipartFile arquivo, 
-                                        @RequestParam(value = "baseId", required = false)Integer baseId, HttpSession session, DatasetVersao novaVersao) {
-
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
-
-        if (usuarioLogado == null) {
-            return "redirect:/home";
-        }
-
-        try {
-            Dataset dataset = datasetRepository.buscarPorId(idDataset);
-            novaVersao.setDataset(dataset);
-            novaVersao.setCriador(usuarioLogado);
-            novaVersao.setArquivoCsv(arquivo.getBytes());
-
-            if (baseId != null) {
-                DatasetVersao versaoBase = new DatasetVersao();
-                versaoBase.setId(baseId);
-                novaVersao.setVersaoBase(versaoBase);
-            }
-
-            datasetVersaoRepository.save(novaVersao);
-
-            return "redirect:/dataset/" + idDataset;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "redirect:/dataset/" + idDataset + "/nova-versao?error=Erro ao processar arquivo CSV.";
-        }
-    }
 
     @GetMapping("/dataset/versao/{id}/download")
     public ResponseEntity<byte[]> baixarCsv(@PathVariable("id") int id, HttpSession session) {
@@ -96,6 +67,58 @@ public class DatasetVersaoController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping(value = "/nova", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> criarNovaVersao(VersaoDTO form) {
+        try {
+            // validações
+            if (form.arquivo() == null || form.arquivo().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "O arquivo CSV é obrigatório."));
+            }
+            if (form.numVersao() == null || form.numVersao().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "O identificador da versão é obrigatório."));
+            }
+
+            // preenche o modelo DatasetVersao
+            DatasetVersao novaVersao = new DatasetVersao();
+            novaVersao.setNumVersao(form.numVersao());
+            novaVersao.setDescricaoModificacoes(form.descricaoModificacoes());
+            
+            // Converte o arquivo em bytes
+            novaVersao.setArquivoCsv(form.arquivo().getBytes());
+
+            // Vincula os relacionamentos
+            Dataset datasetPai = new Dataset();
+            datasetPai.setId(form.datasetId());
+            novaVersao.setDataset(datasetPai);
+
+            Usuario autor = new Usuario();
+            autor.setId(form.contaId());
+            novaVersao.setCriador(autor);
+
+            if (form.versaoBaseId() != null && form.versaoBaseId() > 0) {
+                DatasetVersao versaoBase = new DatasetVersao();
+                versaoBase.setId(form.versaoBaseId());
+                novaVersao.setVersaoBase(versaoBase);
+            } else {
+                novaVersao.setVersaoBase(null);
+            }
+
+            datasetVersaoRepository.save(novaVersao);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "Nova versão registrada com sucesso!"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro ao processar os bytes do arquivo CSV enviado."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro interno ao persistir a versão no banco de dados."));
         }
     }
 }
