@@ -33,6 +33,11 @@ public class UsuarioRepository {
         }
     }
 
+    public Integer buscarIdPorEmail(String email) {
+        String sqlBuscaUser = "SELECT id FROM feature_store.conta WHERE email = ?";
+        return jdbcTemplate.queryForObject(sqlBuscaUser, Integer.class, email);
+    }
+
     public boolean emailExistente(String email) {
         String sql = "SELECT COUNT(*) FROM feature_store.conta WHERE email = ?";
         Integer total = jdbcTemplate.queryForObject(sql, Integer.class, email);

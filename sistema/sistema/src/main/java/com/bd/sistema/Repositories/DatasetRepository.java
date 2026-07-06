@@ -25,12 +25,31 @@ public class DatasetRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, dataset.getNome(), dataset.getDescricao(), dataset.getFontes(), dataset.getEPrivado(), dataset.getCriador().getId());
     }
 
-    public List<Map<String, Object>> buscarPorCriadorOuPublico(int usuarioId) {
-        String sql = "SELECT d.*, c.nome AS nome_criador " +
+    public List<Map<String, Object>> buscarPorColaborador(int usuarioId) {
+        String sql = "SELECT d.id, d.nome, d.e_privado, d.dt_criacao, d.criador_id, d.descricao, c.nome AS nome_criador " +
                      "FROM feature_store.dataset d " +
                      "JOIN feature_store.conta c ON d.criador_id = c.id " +
-                     "WHERE d.criador_id = ? OR d.e_privado = false";
-        return jdbcTemplate.queryForList(sql, usuarioId);
+                     "WHERE d.criador_id = ? " +
+                     "UNION " +
+                     "SELECT d.id, d.nome, d.e_privado, d.dt_criacao, d.criador_id, d.descricao, c.nome AS nome_criador " +
+                     "FROM feature_store.dataset d " +
+                     "JOIN feature_store.conta c ON d.criador_id = c.id " +
+                     "JOIN feature_store.trabalha_em t ON d.id = t.dataset_id " +
+                     "WHERE t.conta_id = ?";
+                     
+        return jdbcTemplate.queryForList(sql, usuarioId, usuarioId);
+    }
+
+    public List<Map<String, Object>> buscarDatasetsPublicos(int usuarioId) {
+        String sql = "SELECT d.id, d.nome, d.e_privado, d.dt_criacao, d.criador_id, d.descricao, c.nome AS nome_criador " +
+                     "FROM feature_store.dataset d " +
+                     "JOIN feature_store.conta c ON d.criador_id = c.id " +
+                     "WHERE d.e_privado = false " +
+                     "AND d.criador_id <> ? " + // Ignora os que o usuário criou
+                     "AND d.id NOT IN ( " +
+                     "  SELECT dataset_id FROM feature_store.trabalha_em WHERE conta_id = ? )"; // Ignora os que ele trabalha
+                     
+        return jdbcTemplate.queryForList(sql, usuarioId, usuarioId);
     }
 
     public Dataset buscarPorId(int id) {

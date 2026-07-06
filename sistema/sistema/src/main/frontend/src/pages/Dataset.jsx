@@ -12,7 +12,13 @@ function Dataset() {
   const [versoes, setVersoes] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
-  
+
+  const [colaboradores, setColaboradores] = useState([]) // Armazena os IDs vindos do back
+  const [emailConvite, setEmailConvite] = useState("") // Campo do input
+  const [mensagemConvite, setMensagemConvite] = useState({ texto: "", erro: false }) // Alertas visual
+  const [mostrarInputConvite, setMostrarInputConvite] = useState(false) // Controla a exibição do mini-formulário
+  const podeConvidar = dataset && usuario && (dataset.criador?.id === usuario.id || colaboradores.includes(usuario.id));
+
   // Controla o colapso individual de cada versão pelo ID
   const [versoesAbertas, setVersoesAbertas] = useState({})
 
@@ -33,6 +39,7 @@ function Dataset() {
         
         setDataset(response.data.dataset)
         setVersoes(response.data.versoes || [])
+        setColaboradores(response.data.colaboradores || [])
       } catch (err) {
         console.error("Erro ao carregar detalhes", err)
         setErro(err.response?.data?.message || "Erro ao conectar com o servidor.")
@@ -43,6 +50,25 @@ function Dataset() {
 
     carregarDados()
   }, [id, navigate])
+
+  const handleEnviarConvite = async (e) => {
+    e.preventDefault()
+    if (!emailConvite.trim()) return
+
+    try {
+      setMensagemConvite({ texto: "", erro: false })
+      const res = await axios.post(`${API_URL}/dataset/${id}/convidar?remetenteId=${usuario.id}&emailDestinatario=${emailConvite}`)
+      
+      setMensagemConvite({ texto: res.data.message, erro: false })
+      setEmailConvite("")
+      setTimeout(() => setMostrarInputConvite(false), 2000) // Fecha a caixinha após sucesso
+    } catch (err) {
+      setMensagemConvite({ 
+        texto: err.response?.data?.message || "Erro ao enviar convite.", 
+        erro: true 
+      })
+    }
+  }
 
   // Limpa o localStorage e desloga
   const handleLogout = () => {
@@ -137,6 +163,18 @@ function Dataset() {
                 <span className="text-xs font-semibold text-gray-500 border border-[#d0d7de] px-2.5 py-0.5 rounded-full bg-[#f6f8fa]">
                   {dataset.e_privado ? 'Privado' : 'Público'}
                 </span>
+                
+                {podeConvidar && (
+                  <button
+                    onClick={() => {
+                      setMostrarInputConvite(!mostrarInputConvite);
+                      setMensagemConvite({ texto: "", erro: false });
+                    }}
+                    className="text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 px-2.5 py-1 rounded transition-colors cursor-pointer"
+                  >
+                    {mostrarInputConvite ? "Cancelar" : "+ Convidar Membro"}
+                  </button>
+                )}
               </div>
               
               <p className="text-xs text-gray-400 mt-2">
@@ -144,22 +182,32 @@ function Dataset() {
                   {dataset.dtCriacao ? new Date(dataset.dtCriacao).toLocaleDateString('pt-BR') : 'N/A'}
                 </span>
               </p>
+              
+              {mostrarInputConvite && (
+                <form onSubmit={handleEnviarConvite} className="mt-3 bg-slate-50 p-3 rounded-md border border-slate-200 max-w-sm">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">E-mail do Participante</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      required
+                      placeholder="exemplo@email.com"
+                      value={emailConvite}
+                      onChange={(e) => setEmailConvite(e.target.value)}
+                      className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1.5 focus:outline-[#00a2ed]"
+                    />
+                    <button type="submit" className="text-xs font-bold bg-[#00a2ed] text-white px-3 py-1.5 rounded hover:bg-[#0089ca] cursor-pointer">
+                      Enviar
+                    </button>
+                  </div>
+                  {mensagemConvite.texto && (
+                    <p className={`text-[11px] font-medium mt-1.5 ${mensagemConvite.erro ? 'text-red-500' : 'text-emerald-600'}`}>
+                      {mensagemConvite.texto}
+                    </p>
+                  )}
+                </form>
+              )}
             </div>
           </div>
-
-          <div>
-            <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Descrição Geral</h3>
-            <p className="text-sm text-gray-600 leading-relaxed bg-[#f6f8fa] p-4 rounded-md border border-gray-200 whitespace-pre-line">
-              {dataset.descricao || "Sem descrição fornecida para este dataset."}
-            </p>
-          </div>
-
-          {dataset.fontes && (
-            <div className="mt-4">
-              <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Fontes Originais</h3>
-              <p className="text-xs font-mono text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 break-all">{dataset.fontes}</p>
-            </div>
-          )}
         </section>
 
         {/* versões */}

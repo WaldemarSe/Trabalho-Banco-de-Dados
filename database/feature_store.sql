@@ -48,6 +48,7 @@ CREATE TABLE feature_store.feature (
     versao_dataset_id INT NOT NULL,
     nome VARCHAR(100) NOT NULL,
     descricao VARCHAR(255),
+    tipo VARCHAR(25),
     CONSTRAINT fk_feature_versao_dataset FOREIGN KEY (versao_dataset_id) 
         REFERENCES feature_store.dataset_versao(id) ON DELETE CASCADE,
     CONSTRAINT pk_feature PRIMARY KEY (id)
@@ -75,6 +76,30 @@ CREATE TABLE feature_store.download (
     CONSTRAINT fk_download_versao_dataset FOREIGN KEY (versao_dataset_id) 
         REFERENCES feature_store.dataset_versao(id) ON DELETE CASCADE,
     CONSTRAINT pk_download PRIMARY KEY (id)
+);
+
+CREATE TABLE feature_store.trabalha_em (
+    conta_id INT NOT NULL,
+    dataset_id INT NOT NULL,
+    CONSTRAINT fk_trabalha_conta FOREIGN KEY (conta_id) 
+        REFERENCES feature_store.conta(id) ON DELETE CASCADE,
+    CONSTRAINT fk_trabalha_dataset FOREIGN KEY (dataset_id) 
+        REFERENCES feature_store.dataset(id) ON DELETE CASCADE,
+    CONSTRAINT pk_trabalha_em PRIMARY KEY (conta_id, dataset_id)
+);
+
+CREATE TABLE feature_store.convite (
+    destinatario_id INT NOT NULL,
+    remetente_id INT NOT NULL,
+    dataset_id INT NOT NULL,
+    dt_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_convite_destinatario FOREIGN KEY (destinatario_id) 
+        REFERENCES feature_store.conta(id) ON DELETE CASCADE,
+    CONSTRAINT fk_convite_remetente FOREIGN KEY (remetente_id) 
+        REFERENCES feature_store.conta(id) ON DELETE CASCADE,
+    CONSTRAINT fk_convite_dataset FOREIGN KEY (dataset_id) 
+        REFERENCES feature_store.dataset(id) ON DELETE CASCADE,
+    CONSTRAINT pk_convite PRIMARY KEY (destinatario_id, dataset_id)
 );
 
 INSERT INTO feature_store.conta (nome, senha, email, e_admin) 

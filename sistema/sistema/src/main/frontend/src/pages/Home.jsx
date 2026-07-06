@@ -9,41 +9,78 @@ function Home() {
   const [datasetsPublicos, setDatasetsPublicos] = useState([])
   const [buscaMeusDatasets, setBuscaMeusDatasets] = useState('')
   const navigate = useNavigate()
+  const [convites, setConvites] = useState([])
+  const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false)
 
   useEffect(() => {
-    // 1. Recupera o usuário logado do localStorage
-    const usuarioSalvo = localStorage.getItem('usuarioLogado')
-    if (!usuarioSalvo) {
-      // Se não tiver usuário logado, chuta ele de volta pro Login
-      navigate('/login')
-      return
+  // 1. Recupera o usuário logado do localStorage
+  const usuarioSalvo = localStorage.getItem('usuarioLogado')
+  if (!usuarioSalvo) {
+    // Se não tiver usuário logado, chuta ele de volta pro Login
+    navigate('/login')
+    return
+  }
+  const user = JSON.parse(usuarioSalvo)
+  setUsuario(user)
+
+  // 2. Buscar os dados do Backend adaptados ao novo modelo
+  const carregarDados = async () => {
+    try {
+      // Dispara as três requisições ao mesmo tempo para melhor performance
+      const [resBarraLateral, resFeed, resConvites] = await Promise.all([
+        axios.get(`${API_URL}/dataset/barra-lateral?usuarioId=${user.id}`),
+        axios.get(`${API_URL}/dataset/feed?usuarioId=${user.id}`),
+        axios.get(`${API_URL}/dataset/convites?contaId=${user.id}`)
+      ])
+
+      // Atualiza a Barra Lateral (Datasets criados + Datasets em que trabalha)
+      // Substitua 'setMeusDatasets' pelo nome do estado que você usa para renderizar a barra lateral
+      setMeusDatasets(resBarraLateral.data || [])
+
+      // Atualiza o Feed (Apenas datasets públicos do sistema)
+      // Substitua 'setDatasetsPublicos' pelo nome do estado que você usa para o feed central
+      setDatasetsPublicos(resFeed.data || [])
+
+      // Atualiza a lista de notificações/convites
+      // Adicione este set para alimentar o componente de notificações que criamos
+      setConvites(resConvites.data || [])
+
+    } catch (error) {
+      console.error("Erro ao carregar dados do ecossistema de datasets", error)
     }
-    const user = JSON.parse(usuarioSalvo)
-    setUsuario(user)
+  }
 
-    // 2. Buscar os dados do Backend (Substitua pelos seus endpoints reais depois)
-    const carregarDados = async () => {
-      try {
-        const response = await axios.post(`${API_URL}/dataset/listar-datasets-visiveis`, user)
-
-        const todosDatasets = response.data
-        
-        const meus = todosDatasets.filter(ds => ds.criador_id === user.id)
-        const publicos = todosDatasets.filter(ds => ds.e_privado === false && ds.criador_id !== user.id)
-        setMeusDatasets(meus)
-        setDatasetsPublicos(publicos)
-      } catch (error) {
-        console.error("Erro ao carregar datasets", error)
-      }
-    }
-
-    carregarDados()
-  }, [navigate])
+  carregarDados()
+}, [navigate])
 
   // Desloga o usuário limpando o localStorage
   const handleLogout = () => {
     localStorage.removeItem('usuarioLogado')
     navigate('/login')
+  }
+
+  const carregarConvites = async (usuarioId) => {
+    try {
+      const res = await axios.get(`${API_URL}/dataset/convites?contaId=${usuarioId}`)
+      setConvites(res.data || [])
+    } catch (err) {
+      console.error("Erro ao buscar convites", err)
+    }
+  }
+
+  const handleResponderConvite = async (datasetId, aceitou) => {
+    try {
+      await axios.post(`${API_URL}/dataset/convites/responder?contaId=${usuario.id}&datasetId=${datasetId}&aceitou=${aceitou}`)
+      
+      // Atualiza a lista de convites tirando o respondido
+      setConvites(prev => prev.filter(c => c.dataset_id !== datasetId))
+      
+      // 💡 RECARREGA OS DATASETS DA TELA: 
+      // Se você estiver na Home, chame a sua função que lista os datasets da barra lateral aqui para atualizar em tempo real!
+      window.location.reload() 
+    } catch (err) {
+      alert("Erro ao responder convite.")
+    }
   }
 
   // Filtra a barra lateral conforme o usuário digita na busca
@@ -67,22 +104,77 @@ function Home() {
         </div>
 
         {/* Seção do Usuário na Direita */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            {/* Ícone padrão de foto */}
-            <div className="w-8 h-8 rounded-full bg-[#00a2ed] flex items-center justify-center text-white font-bold text-sm uppercase border border-white/20">
-              {usuario.nome.charAt(0)}
+        {usuario && (
+          <div className="flex items-center gap-4 relative"> {/* Adicionado 'relative' para ancorar o dropdown */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#00a2ed] flex items-center justify-center text-white font-bold text-sm uppercase border border-white/20">
+                {usuario.nome.charAt(0)}
+              </div>
+              <span className="text-sm font-medium hidden sm:inline">{usuario.nome}</span>
             </div>
-            <span className="text-sm font-medium hidden sm:inline">{usuario.nome}</span>
+            
+            {/* 🔔 BOTÃO DE NOTIFICAÇÕES */}
+            <div className="relative">
+              <button 
+                onClick={() => setMostrarNotificacoes(!mostrarNotificacoes)}
+                className="text-xs font-semibold bg-slate-700/50 hover:bg-slate-700 text-white px-2.5 py-1.5 rounded transition-colors flex items-center gap-1.5 cursor-pointer relative"
+              >
+                <span>🔔</span>
+                <span className="hidden md:inline">Notificações</span>
+                {convites.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                    {convites.length}
+                  </span>
+                )}
+              </button>
+
+              {/* 📂 CAIXINHA FLUTUANTE DE CONVITES (DROPDOWN) */}
+              {mostrarNotificacoes && (
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-md border border-gray-200 shadow-lg z-50 text-[#1f2328]">
+                  <div className="p-2.5 border-b border-gray-100 font-bold text-xs text-gray-500 uppercase tracking-wider">
+                    Convites Pendentes ({convites.length})
+                  </div>
+                  <div className="max-h-60 overflow-y-auto">
+                    {convites.length > 0 ? (
+                      convites.map((convite) => (
+                        <div key={convite.dataset_id} className="p-3 border-b border-gray-50 flex flex-col gap-2 hover:bg-slate-50/50">
+                          <p className="text-xs text-gray-600 leading-normal">
+                            <strong className="text-slate-800">{convite.remetente_nome}</strong> te convidou para colaborar no dataset <strong className="text-[#0969da]">{convite.dataset_nome}</strong>.
+                          </p>
+                          <div className="flex gap-2 justify-end">
+                            <button 
+                              onClick={() => handleResponderConvite(convite.dataset_id, false)}
+                              className="text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded cursor-pointer transition-colors"
+                            >
+                              Recusar
+                            </button>
+                            <button 
+                              onClick={() => handleResponderConvite(convite.dataset_id, true)}
+                              className="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded cursor-pointer transition-colors"
+                            >
+                              Aceitar
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-xs text-gray-400 text-center italic">
+                        Nenhuma notificação por aqui.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button 
+              onClick={handleLogout}
+              className="text-xs text-slate-300 hover:text-white border border-slate-500 hover:border-white px-2.5 py-1 rounded transition-colors cursor-pointer"
+            >
+              Sair
+            </button>
           </div>
-          
-          <button 
-            onClick={handleLogout}
-            className="text-xs text-slate-300 hover:text-white border border-slate-500 hover:border-white px-2.5 py-1 rounded transition-colors cursor-pointer"
-          >
-            Sair
-          </button>
-        </div>
+        )}
       </header>
 
       {/* corpo principal */}
