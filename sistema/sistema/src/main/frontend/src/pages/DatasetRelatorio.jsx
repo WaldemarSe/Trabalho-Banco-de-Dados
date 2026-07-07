@@ -2,18 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { API_URL } from '../constants/api'
-import axios from 'axios' // 1. IMPORTAÇÃO DO AXIOS
+import axios from 'axios' 
 
 function DatasetRelatorio() {
   const { id } = useParams() 
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
 
-  // 2. ESTADOS AGORA COMEÇAM VAZIOS PARA RECEBER OS DADOS DO BACKEND
   const [dadosGrafico, setDadosGrafico] = useState([])
   const [dadosTabela, setDadosTabela] = useState([])
   
-  // ESTADOS DE CONTROLE DA REQUISIÇÃO
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
 
@@ -26,16 +24,14 @@ function DatasetRelatorio() {
     }
     setUsuario(JSON.parse(usuarioSalvo))
 
-    // 3. FUNÇÃO QUE CONSOME O ENDPOINT DO BACKEND
     const buscarMetricasRelatorio = async () => {
       try {
         setCarregando(true)
         setErro(null)
         
-        // Ajuste a URL base se sua API rodar em outra porta
         const response = await axios.get(`${API_URL}/dataset/${id}/relatorio`)
         
-        // Seta as duas listas vindas do Map do Spring Boot
+        // Seta as duas listas vindas do Map do backend
         setDadosGrafico(response.data.dadosGrafico || [])
         setDadosTabela(response.data.dadosTabela || [])
       } catch (err) {
@@ -54,7 +50,6 @@ function DatasetRelatorio() {
     navigate('/login')
   }
 
-  // 4. INTERFACE DE CARREGAMENTO E ERRO
   if (carregando) {
     return (
       <div className="min-h-screen bg-[#f6f8fa] flex items-center justify-center">
@@ -66,7 +61,7 @@ function DatasetRelatorio() {
   return (
     <div className="min-h-screen bg-[#f6f8fa] text-[#1f2328] font-sans flex flex-col">
       
-      {/* BARRA SUPERIOR (Mantendo o padrão do FeatureStore) */}
+      {/* barra superior */}
       <header className="bg-[#1a2e4c] text-white px-6 py-3 flex justify-between items-center border-b border-[#d0d7de] shadow-sm">
         <div className="flex items-center gap-3">
           <Link to="/home" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
@@ -95,7 +90,7 @@ function DatasetRelatorio() {
         )}
       </header>
 
-      {/* CORPO DO RELATÓRIO */}
+      {/* corpo do relatório */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
         <div>
           <Link to={`/dataset/${id}`} className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
@@ -105,14 +100,13 @@ function DatasetRelatorio() {
           <p className="text-xs text-gray-500">Métricas consolidadas de visualizações e downloads no período de 08/06/2026 até Hoje.</p>
         </div>
 
-        {/* FEEDBACK DE ERRO SE HOUVER */}
         {erro && (
           <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium">
             {erro}
           </div>
         )}
 
-        {/* ── SEÇÃO 1: GRÁFICO DE DUAS LINHAS ── */}
+        {/* gráfico de duas linhas */}
         <div className="bg-white border border-[#d0d7de] rounded-lg shadow-2xs p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center border-b border-gray-100 pb-3">
             <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Evolução Temporal</h3>
@@ -163,7 +157,7 @@ function DatasetRelatorio() {
           </div>
         </div>
 
-        {/* ── SEÇÃO 2: TABELA DE AUDITORIA DE ACESSOS ── */}
+        {/* tabela de acessos */}
         <div className="bg-white border border-[#d0d7de] rounded-lg shadow-2xs p-6 flex flex-col gap-4">
           <div className="border-b border-gray-100 pb-3">
             <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Usuários que acessaram neste período</h3>

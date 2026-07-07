@@ -4,25 +4,21 @@ import axios from 'axios'
 import { API_URL } from '../constants/api'
 
 function CriarVersao() {
-  const { id } = useParams() // Captura o ID do dataset pai
+  const { id } = useParams() 
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   
   const [usuario, setUsuario] = useState(null)
   
-  // Captura os dados da versão pai da URL (?baseId=X&numBase=v1.0)
   const baseId = searchParams.get('baseId')
   const numBase = searchParams.get('numBase')
 
-  // Estados do Formulário da Versão
   const [numVersao, setNumVersao] = useState('')
   const [descricaoModificacoes, setDescricaoModificacoes] = useState('')
   const [arquivo, setArquivo] = useState(null)
 
-  // 🔥 NOVO: Estado para armazenar a lista dinâmica de novas features mapeadas nesta versão
   const [features, setFeatures] = useState([])
 
-  // Estados de controle
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
 
@@ -93,14 +89,12 @@ function CriarVersao() {
         }
       })
 
-      // Envia os dados para a sua rota ajustada no Spring
       await axios.post(`${API_URL}/dataset/versao/nova`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
 
-      // Sucesso! Retorna para os detalhes do dataset de origem
       navigate(`/dataset/${id}`)
 
     } catch (err) {
@@ -143,8 +137,7 @@ function CriarVersao() {
         )}
       </header>
 
-      {/* ── CORPO DO FORMULÁRIO ── */}
-      {/* 💡 Ajustado de max-w-200 para max-w-220 para acomodar a tabela perfeitamente */}
+      {/* corpo formulário */}
       <main className="flex-1 max-w-220 w-full mx-auto px-4 py-8 flex flex-col gap-4">
         <div>
           <Link to={`/dataset/${id}`} className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
@@ -171,7 +164,6 @@ function CriarVersao() {
             </div>
           )}
 
-          {/* CAMPOS TEXTUAIS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1 md:col-span-1">
               <label className="text-sm font-semibold text-slate-700">Nova Versão *</label>
@@ -198,7 +190,7 @@ function CriarVersao() {
             </div>
           </div>
 
-          {/* UPLOAD DO NOVO CSV */}
+          {/* upload do arquivo */}
           <div className="flex flex-col gap-2 mt-1">
             <label className="text-sm font-semibold text-slate-700">Upload do Arquivo (.CSV) *</label>
             <div className="border-2 border-dashed border-slate-300 hover:border-[#00a2ed] bg-slate-50/50 rounded-lg p-6 text-center transition-colors relative flex flex-col items-center justify-center gap-2">
@@ -225,7 +217,7 @@ function CriarVersao() {
             </div>
           </div>
 
-          {/* 🔥 NOVO: MAPEAMENTO DE FEATURES EM TABELA DINÂMICA */}
+          {/* mapeamento de features */}
           <div className="flex flex-col gap-3 mt-2 border-t border-gray-100 pt-5">
             <div className="flex justify-between items-center flex-wrap gap-2 px-1">
               <div>
@@ -233,7 +225,7 @@ function CriarVersao() {
                 <p className="text-xs text-gray-400">Mapeie as novas colunas ou alterações de metadados contidos neste CSV.</p>
               </div>
               <button
-                type="button" // 💡 Evita que submeta o form principal acidentalmente
+                type="button" 
                 onClick={adicionarLinhaFeature}
                 className="text-xs font-bold bg-[#00a2ed] text-white hover:bg-[#0089ca] px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer shadow-3xs"
               >

@@ -13,6 +13,7 @@ import Dataset from './pages/Dataset'
 import CriarDataset from './pages/CriarDataset'
 import CriarVersao from './pages/CriarVersao'
 import DatasetRelatorio from './pages/DatasetRelatorio' 
+import DatasetRelatorioAdmin from './pages/DatasetRelatorioAdmin'
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/dataset/novo" element={<CriarDataset />} />
         <Route path="/dataset/:id/versao/nova" element={<CriarVersao />} />
         <Route path="/dataset/:id/relatorio" element={<DatasetRelatorio />} />
+        <Route path="/admin/relatorio" element={<DatasetRelatorioAdmin />} />
         <Route path="/dataset/:id" element={<Dataset />} />
       </Routes>
     </BrowserRouter>

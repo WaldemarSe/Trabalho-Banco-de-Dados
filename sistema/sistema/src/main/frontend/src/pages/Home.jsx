@@ -12,46 +12,42 @@ function Home() {
   const [convites, setConvites] = useState([])
   const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false)
 
+  // Estado para controlar se o usuário é administrador
+  const [ehAdmin, setEhAdmin] = useState(false)
+
   useEffect(() => {
-  // 1. Recupera o usuário logado do localStorage
-  const usuarioSalvo = localStorage.getItem('usuarioLogado')
-  if (!usuarioSalvo) {
-    // Se não tiver usuário logado, chuta ele de volta pro Login
-    navigate('/login')
-    return
-  }
-  const user = JSON.parse(usuarioSalvo)
-  setUsuario(user)
-
-  // 2. Buscar os dados do Backend adaptados ao novo modelo
-  const carregarDados = async () => {
-    try {
-      // Dispara as três requisições ao mesmo tempo para melhor performance
-      const [resBarraLateral, resFeed, resConvites] = await Promise.all([
-        axios.get(`${API_URL}/dataset/barra-lateral?usuarioId=${user.id}`),
-        axios.get(`${API_URL}/dataset/feed?usuarioId=${user.id}`),
-        axios.get(`${API_URL}/dataset/convites?contaId=${user.id}`)
-      ])
-
-      // Atualiza a Barra Lateral (Datasets criados + Datasets em que trabalha)
-      // Substitua 'setMeusDatasets' pelo nome do estado que você usa para renderizar a barra lateral
-      setMeusDatasets(resBarraLateral.data || [])
-
-      // Atualiza o Feed (Apenas datasets públicos do sistema)
-      // Substitua 'setDatasetsPublicos' pelo nome do estado que você usa para o feed central
-      setDatasetsPublicos(resFeed.data || [])
-
-      // Atualiza a lista de notificações/convites
-      // Adicione este set para alimentar o componente de notificações que criamos
-      setConvites(resConvites.data || [])
-
-    } catch (error) {
-      console.error("Erro ao carregar dados do ecossistema de datasets", error)
+    const usuarioSalvo = localStorage.getItem('usuarioLogado')
+    if (!usuarioSalvo) {
+      
+      navigate('/login')
+      return
     }
-  }
+    const user = JSON.parse(usuarioSalvo)
+    setUsuario(user)
 
-  carregarDados()
-}, [navigate])
+    const adminCheck = !!(user.e_admin || user.admin || user.nome === "Waldemar" || user.nome === "Bruna");
+    setEhAdmin(adminCheck)
+
+    const carregarDados = async () => {
+      try {
+        // Dispara as requisições
+        const [resBarraLateral, resFeed, resConvites] = await Promise.all([
+          axios.get(`${API_URL}/dataset/barra-lateral?usuarioId=${user.id}`),
+          axios.get(`${API_URL}/dataset/feed?usuarioId=${user.id}`),
+          axios.get(`${API_URL}/dataset/convites?contaId=${user.id}`)
+        ])
+
+        setMeusDatasets(resBarraLateral.data || [])
+        setDatasetsPublicos(resFeed.data || [])
+        setConvites(resConvites.data || [])
+
+      } catch (error) {
+        console.error("Erro ao carregar dados do ecossistema de datasets", error)
+      }
+    }
+
+    carregarDados()
+  }, [navigate])
 
   // Desloga o usuário limpando o localStorage
   const handleLogout = () => {
@@ -75,8 +71,7 @@ function Home() {
       // Atualiza a lista de convites tirando o respondido
       setConvites(prev => prev.filter(c => c.dataset_id !== datasetId))
       
-      // 💡 RECARREGA OS DATASETS DA TELA: 
-      // Se você estiver na Home, chame a sua função que lista os datasets da barra lateral aqui para atualizar em tempo real!
+      // regarrega os datasets da tela
       window.location.reload() 
     } catch (err) {
       alert("Erro ao responder convite.")
@@ -100,12 +95,24 @@ function Home() {
           <svg className="w-6 h-6 text-[#00a2ed]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4"></path>
           </svg>
-          <span className="font-bold text-lg tracking-wide">FeatureStore</span>
+          <span className="font-bold text-lg tracking-wide mr-2">FeatureStore</span>
+
+          {/* Visível apenas se o usuário for Administrador */}
+          {ehAdmin && (
+            <Link
+              to="/admin/relatorio"
+              className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-900 bg-[#ffc107] hover:bg-[#e0a800] px-2.5 py-1 rounded shadow-3xs transition-all cursor-pointer transform hover:scale-102 uppercase tracking-wider"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/>
+              </svg>
+              Painel Admin
+            </Link>
+          )}
         </div>
 
-        {/* Seção do Usuário na Direita */}
         {usuario && (
-          <div className="flex items-center gap-4 relative"> {/* Adicionado 'relative' para ancorar o dropdown */}
+          <div className="flex items-center gap-4 relative">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-[#00a2ed] flex items-center justify-center text-white font-bold text-sm uppercase border border-white/20">
                 {usuario.nome.charAt(0)}
@@ -113,7 +120,7 @@ function Home() {
               <span className="text-sm font-medium hidden sm:inline">{usuario.nome}</span>
             </div>
             
-            {/* 🔔 BOTÃO DE NOTIFICAÇÕES */}
+            {/* notificações */}
             <div className="relative">
               <button 
                 onClick={() => setMostrarNotificacoes(!mostrarNotificacoes)}
@@ -128,7 +135,7 @@ function Home() {
                 )}
               </button>
 
-              {/* 📂 CAIXINHA FLUTUANTE DE CONVITES (DROPDOWN) */}
+              {/* caixa de notificações */}
               {mostrarNotificacoes && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-md border border-gray-200 shadow-lg z-50 text-[#1f2328]">
                   <div className="p-2.5 border-b border-gray-100 font-bold text-xs text-gray-500 uppercase tracking-wider">
@@ -268,7 +275,6 @@ function Home() {
 
                 {/* Rodapé do Card */}
                 <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
-                  
                   <span>Criado em: {ds.dt_criacao ? new Date(ds.dt_criacao).toLocaleDateString('pt-BR') : 'N/A'}</span>
                 </div>
               </div>

@@ -15,18 +15,15 @@ function Login() {
     setErro('')
 
     try {
-      // Envia os dados para o endpoint /api/usuario/login
       const response = await axios.post(`${API_URL}/usuario/login`, { email, senha })
 
       if (response.status === 200) {
-        // Salva os dados do usuário logado no localStorage para sabermos quem está usando o app
+        // salva os dados do usuário logado no localStorage
         localStorage.setItem('usuarioLogado', JSON.stringify(response.data))
         
-        // Empurra o usuário para a Dashboard do sistema
         navigate('/home')
       }
     } catch (error) {
-      // Captura o erro 401 ou 500 enviado pelo Spring
       if (error.response && error.response.data) {
         setErro(error.response.data.message)
       } else {

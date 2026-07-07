@@ -17,7 +17,7 @@ public class VisualizacaoRepository {
         return jdbcTemplate.update(sql, contaId, versaoDatasetId);
     }
 
-    // Monta o agregador do Gráfico de Linhas (A partir de 08/06/2026)
+    // Monta o gráfico de visualizações e downloads
     public List<Map<String, Object>> buscarDadosGrafico(int datasetId) {
         String sql = "SELECT " +
                      "   TO_CHAR(t.dt_e_hora, 'DD/MM/YYYY') AS \"dataEixo\", " +
@@ -39,8 +39,7 @@ public class VisualizacaoRepository {
         return jdbcTemplate.queryForList(sql, datasetId);
     }
 
-    // Monta a Tabela de Auditoria de Usuários (Quem visualizou e se baixou no mesmo dia)
-    // Monta a Tabela de Auditoria de Usuários (Quem visualizou e se baixou no mesmo dia)
+    // Monta a tabela de visualizações e downloads
     public List<Map<String, Object>> buscarDadosTabela(int datasetId) {
         String sql = "SELECT " +
                      "   c.nome AS \"nome\", " +
@@ -59,8 +58,19 @@ public class VisualizacaoRepository {
                      "JOIN feature_store.dataset_versao dv ON v.versao_dataset_id = dv.id " +
                      "WHERE dv.dataset_id = ? " +
                      "  AND v.dt_e_hora >= '2026-06-08 00:00:00'::timestamp " +
-                     "ORDER BY v.dt_e_hora DESC"; // 👈 Removeu o GROUP BY problemático e simplificou o ORDER BY
+                     "ORDER BY v.dt_e_hora DESC"; 
 
         return jdbcTemplate.queryForList(sql, datasetId);
+    }
+
+    public List<Map<String, Object>> buscarTop5MaisVistos() {
+        String sql = "SELECT d.id, d.nome, COUNT(v.id) AS \"quantidade\" " +
+                    "FROM feature_store.dataset d " +
+                    "JOIN feature_store.dataset_versao dv ON d.id = dv.dataset_id " +
+                    "JOIN feature_store.visualizacao v ON dv.id = v.versao_dataset_id " +
+                    "GROUP BY d.id, d.nome " +
+                    "ORDER BY \"quantidade\" DESC " +
+                    "LIMIT 5";
+        return jdbcTemplate.queryForList(sql);
     }
 }

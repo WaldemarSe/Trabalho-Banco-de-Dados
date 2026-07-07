@@ -131,7 +131,7 @@ function Dataset() {
   return (
     <div className="min-h-screen bg-[#f6f8fa] text-[#1f2328] font-sans flex flex-col">
       
-      {/* 1. BARRA SUPERIOR ATUALIZADA (Com Central de Notificações inclusa) */}
+      {/* barra superior */}
       <header className="bg-[#1a2e4c] text-white px-6 py-3 flex justify-between items-center border-b border-[#d0d7de] shadow-sm">
         <div className="flex items-center gap-3">
           <Link to="/home" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
@@ -151,7 +151,7 @@ function Dataset() {
               <span className="text-sm font-medium hidden sm:inline">{usuario.nome}</span>
             </div>
             
-            {/* 🔔 NOTIFICAÇÕES */}
+            {/* notificações */}
             <div className="relative">
               <button 
                 onClick={() => setMostrarNotificacoes(!mostrarNotificacoes)}
@@ -222,7 +222,6 @@ function Dataset() {
           </Link>
         </div>
 
-        {/* 🎯 SEÇÃO CENTRALIZADA CORRETAMENTE */}
         <section className="bg-white p-6 rounded-lg border border-[#d0d7de] shadow-xs flex flex-col items-center text-center">
           <div className="w-full flex flex-col items-center border-b border-[#d0d7de] pb-5 mb-5">
             <div className="flex items-center gap-3 justify-center flex-wrap w-full relative">
@@ -276,17 +275,17 @@ function Dataset() {
             )}
           </div>
 
-          {/* 📄 Bloco da Descrição com Botão de Relatório Analítico */}
+          {/* Descrição com Botão de Relatório */}
           <div className="w-full max-w-2xl text-left relative flex flex-col items-center">
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">Descrição Geral</h4>
             
-            {/* Container relativo para posicionar o botão no canto inferior */}
+            {/* Container para posicionar o botão no canto inferior */}
             <div className="w-full bg-white p-3 rounded border border-gray-200 relative pb-12">
               <p className="text-sm text-gray-600 leading-relaxed text-center">
                 {dataset.descricao || dataset.descricao_geral || "Nenhuma descrição fornecida para este dataset."}
               </p>
 
-              {/* 📊 BOTÃO DO RELATÓRIO: Visível apenas para o Criador e Colaboradores */}
+              {/* Botão visível apenas para o Criador e Colaboradores */}
               {ehDonoOuColaborador && (
                 <Link
                   to={`/dataset/${id}/relatorio`}
@@ -332,7 +331,7 @@ function Dataset() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* 🔒 BOTÃO DE NOVA VERSÃO PROTEGIDO POR PERMISSÃO */}
+                        {/* botão de nova versão protegido */}
                         {ehDonoOuColaborador && (
                           <Link
                               to={`/dataset/${id}/versao/nova?baseId=${versao.id}&numBase=${versao.numVersao || versao.num_versao}`}
@@ -383,7 +382,7 @@ function Dataset() {
                           </div>
                         </div>
 
-                        {/* 📊 TABELA DE FEATURES ORGANIZADA (Nome, Tipo, Descrição) */}
+                        {/* tabela de features */}
                         <div>
                           <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Features</h4>
                           {versao.features && versao.features.length > 0 ? (

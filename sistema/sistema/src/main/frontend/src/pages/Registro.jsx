@@ -16,21 +16,19 @@ function Registro() {
     setErro('') 
 
     try {
-      // Monta o objeto exatamente como a classe Usuario.java espera receber via @RequestBody
+      // Monta o objeto 
       const dadosUsuario = { nome, email, senha }
 
-      // Faz a requisição POST para o endpoint que alteramos no seu Spring Controller
+      // Faz a requisição POST 
       const response = await axios.post(`${API_URL}/usuario/registro`, dadosUsuario)
 
       if (response.status === 201) {
-        // Se o Spring respondeu CREATED, salvamos o usuário logado no navegador (opcional, mas muito útil)
         localStorage.setItem('usuarioLogado', JSON.stringify(response.data))
         
-        // Redireciona o usuário instantaneamente para a Home usando o React Router
+        // Redireciona o usuário para a Home 
         navigate('/home')
       }
     } catch (error) {
-      // Se o Spring devolver um erro (ex: Bad Request 400), capturamos a mensagem
       if (error.response && error.response.data) {
         setErro(error.response.data.message)
       } else {
@@ -111,7 +109,6 @@ function Registro() {
           </button>
         </form>
 
-        {/* Link auxiliar para voltar pro Login se já tiver conta */}
         <div className="mt-5 text-center">
           <Link to="/login" className="text-sm text-[#00a2ed] hover:underline">
             Já tem conta? Faça login

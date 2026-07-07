@@ -18,10 +18,8 @@ function CriarDataset() {
   const [descricaoModificacoes, setDescricaoModificacoes] = useState('Criação inicial do dataset')
   const [arquivo, setArquivo] = useState(null)
 
-  // 🔥 NOVO: Estado para armazenar a lista dinâmica de features mapeadas
   const [features, setFeatures] = useState([])
 
-  // Estados de controle da tela
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
 
@@ -45,7 +43,6 @@ function CriarDataset() {
     }
   }
 
-  // 🔥 Funções de manipulação dinâmica da tabela de features
   const adicionarLinhaFeature = () => {
     setFeatures([...features, { nome: '', tipo: '', descricao: '' }])
   }
@@ -82,12 +79,12 @@ function CriarDataset() {
       formData.append('arquivo', arquivo) 
       formData.append('contaId', usuario.id)
 
-      // 🔥 NOVO: Insere as listas paralelas de features no FormData para o Spring Boot capturar
+      // Insere as listas de features no FormData para o backend
       features.forEach((feat) => {
         // Envia apenas se o nome da feature estiver preenchido para evitar lixo no banco
         if (feat.nome.trim()) {
           formData.append('featureNome', feat.nome.trim())
-          formData.append('featureTipo', feat.tipo.trim() || 'VARCHAR') // Default caso deixem em branco
+          formData.append('featureTipo', feat.tipo.trim() || 'VARCHAR')
           formData.append('featureDescricao', feat.descricao.trim())
         }
       })
@@ -156,7 +153,7 @@ function CriarDataset() {
 
         <form onSubmit={handleSubmit} className="bg-white border border-[#d0d7de] rounded-lg shadow-2xs p-6 flex flex-col gap-6">
           
-          {/* SEÇÃO 1: DADOS DO DATASET */}
+          {/* dados do dataset */}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-semibold text-slate-700">Nome do Dataset *</label>
@@ -206,7 +203,7 @@ function CriarDataset() {
             </div>
           </div>
 
-          {/* SEÇÃO 2: DADOS DA VERSÃO */}
+          {/* dados da versão */}
           <div className="flex flex-col gap-4 mt-2 border-t border-gray-100 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-1 md:col-span-1">
@@ -259,7 +256,7 @@ function CriarDataset() {
             </div>
           </div>
 
-          {/* 🔥 SEÇÃO 3: MAPEAMENTO DE FEATURES EM TABELA DINÂMICA */}
+          {/* mapeamento de features */}
           <div className="flex flex-col gap-3 mt-2 border-t border-gray-100 pt-5">
             <div className="flex justify-between items-center flex-wrap gap-2 px-1">
               <div>
@@ -267,7 +264,7 @@ function CriarDataset() {
                 <p className="text-xs text-gray-400">Mapeie o nome, tipo e a utilidade de cada coluna contida no arquivo CSV.</p>
               </div>
               <button
-                type="button" // 💡 Fundamental para NÃO submeter o formulário ao clicar
+                type="button"
                 onClick={adicionarLinhaFeature}
                 className="text-xs font-bold bg-[#00a2ed] text-white hover:bg-[#0089ca] px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer shadow-3xs"
               >
@@ -341,7 +338,6 @@ function CriarDataset() {
             )}
           </div>
 
-          {/* BOTÕES DE AÇÃO */}
           <div className="border-t border-gray-100 pt-4 flex justify-end gap-3">
             <Link 
               to="/home" 

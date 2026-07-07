@@ -22,6 +22,7 @@ import com.bd.sistema.Repositories.TrabalhaEmRepository;
 import com.bd.sistema.Repositories.ConviteRepository;
 import com.bd.sistema.Repositories.UsuarioRepository;
 import com.bd.sistema.Repositories.VisualizacaoRepository;
+import com.bd.sistema.Repositories.DownloadRepository;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +35,8 @@ import com.bd.sistema.dto.IdUsuarioDTO;
 import com.bd.sistema.dto.FeatureDTO;
 
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.HashMap;
 import java.util.List;
 import java.io.IOException;
 
@@ -62,6 +65,9 @@ public class DatasetController {
 
     @Autowired
     private VisualizacaoRepository visualizacaoRepository;
+    
+    @Autowired
+    private DownloadRepository downloadRepository;
 
     @GetMapping("/detalhes/{id}")
     public ResponseEntity<?> mostrarDetalhesDataset(@PathVariable("id") int id) {
@@ -280,7 +286,24 @@ public class DatasetController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erro interno ao processar os dados analíticos do relatório."));
+                    .body(Map.of("message", "Erro interno ao processar o relatório."));
+        }
+    }
+
+    @GetMapping("/admin/relatorio-geral")
+    public ResponseEntity<?> obterRelatorioGeralAdmin() {
+        try {
+            Map<String, Object> resposta = new HashMap<>();
+            
+            resposta.put("totalDatasets", datasetRepository.contarTotalDatasets());
+            resposta.put("maisVistos", visualizacaoRepository.buscarTop5MaisVistos());
+            resposta.put("maisBaixados", downloadRepository.buscarTop5MaisBaixados());
+            
+            return ResponseEntity.ok(resposta);
+        } catch (Exception e) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("message", "Erro ao processar o relatório do admin.");
+            return ResponseEntity.status(500).body(erro);
         }
     }
 }

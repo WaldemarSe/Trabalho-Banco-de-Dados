@@ -45,9 +45,9 @@ public class DatasetRepository {
                      "FROM feature_store.dataset d " +
                      "JOIN feature_store.conta c ON d.criador_id = c.id " +
                      "WHERE d.e_privado = false " +
-                     "AND d.criador_id <> ? " + // Ignora os que o usuário criou
+                     "AND d.criador_id <> ? " + // ignora os datasets criados pelo usuário
                      "AND d.id NOT IN ( " +
-                     "  SELECT dataset_id FROM feature_store.trabalha_em WHERE conta_id = ? )"; // Ignora os que ele trabalha
+                     "  SELECT dataset_id FROM feature_store.trabalha_em WHERE conta_id = ? )"; // ignora os que ele trabalha
                      
         return jdbcTemplate.queryForList(sql, usuarioId, usuarioId);
     }
@@ -58,6 +58,11 @@ public class DatasetRepository {
                      "JOIN feature_store.conta c ON d.criador_id = c.id " +
                      "WHERE d.id = ?";
         return jdbcTemplate.queryForObject(sql, new DatasetRowMapper(), id);
+    }
+
+    public int contarTotalDatasets() {
+        String sql = "SELECT COUNT(*) FROM feature_store.dataset";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     private static class DatasetRowMapper implements RowMapper<Dataset> {
