@@ -111,6 +111,37 @@ function Dataset() {
     }
   }
 
+  // Executa a exclusão de todo o dataset
+  const handleDeletarDataset = async () => {
+    if (!window.confirm("Tem mesmo certeza absoluta de que deseja deletar este dataset e todas as suas versões/dependências?")) {
+      return
+    }
+    try {
+      const res = await axios.delete(`${API_URL}/dataset/${id}/deletar`)
+      alert(res.data.message || "Dataset removido com sucesso.")
+      navigate('/home')
+    } catch (err) {
+      console.error(err)
+      alert(err.response?.data?.message || "Erro interno ao tentar remover o dataset.")
+    }
+  }
+
+  // Executa a exclusão de uma única versão
+  const handleDeletarVersao = async (versaoId) => {
+    if (!window.confirm("Deseja realmente excluir esta versão?")) {
+      return
+    }
+    try {
+      const res = await axios.delete(`${API_URL}/dataset/versao/${versaoId}/deletar`)
+      alert(res.data.message || "Versão deletada com sucesso.")
+      // Recarrega a lista de versões atualizando o estado local filtrado
+      setVersoes(prev => prev.filter(v => v.id !== versaoId))
+    } catch (err) {
+      console.error(err)
+      alert(err.response?.data?.message || "Erro ao deletar a versão do dataset.")
+    }
+  }
+
   if (carregando) {
     return (
       <div className="min-h-screen bg-[#f6f8fa] flex items-center justify-center text-sm text-gray-500">
@@ -216,10 +247,20 @@ function Dataset() {
 
       <div className="flex-1 max-w-275 w-full mx-auto px-4 py-8 flex flex-col gap-6">
         
-        <div>
+        <div className="flex justify-between items-center">
           <Link to="/home" className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
             ‹ Voltar
           </Link>
+          
+          {/* Excluir Dataset */}
+          {ehDonoOuColaborador && (
+            <button
+              onClick={handleDeletarDataset}
+              className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-md transition-colors cursor-pointer"
+            >
+              🗑️ Excluir Dataset
+            </button>
+          )}
         </div>
 
         <section className="bg-white p-6 rounded-lg border border-[#d0d7de] shadow-xs flex flex-col items-center text-center">
@@ -337,10 +378,10 @@ function Dataset() {
                               to={`/dataset/${id}/versao/nova?baseId=${versao.id}&numBase=${versao.numVersao || versao.num_versao}`}
                               className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 px-3 py-1.5 rounded-md font-medium shadow-3xs transition-colors cursor-pointer"
                           >
-                              <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
-                              </svg>
-                              Nova Versão
+                            <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Nova Versão
                           </Link>
                         )}
                         
@@ -368,17 +409,27 @@ function Dataset() {
                             </p>
                           </div>
                           
-                          <div className="sm:mt-5">
+                          <div className="sm:mt-5 flex items-center gap-2 w-full sm:w-auto">
                             <a
                               href={`${API_URL}/dataset/versao/${versao.id}/download?contaId=${usuario.id}`}
                               download
-                              className="flex items-center justify-center gap-1.5 text-xs text-slate-700 bg-white hover:bg-[#f6f8fa] border border-[#d0d7de] px-4 py-2.5 rounded-md font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap w-full sm:w-auto"
+                              className="flex items-center justify-center gap-1.5 text-xs text-slate-700 bg-white hover:bg-[#f6f8fa] border border-[#d0d7de] px-4 py-2.5 rounded-md font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap flex-1 sm:flex-none"
                             >
                               <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                               </svg>
                               Download CSV
                             </a>
+
+                            {/* Botão Excluir Versão */}
+                            {ehDonoOuColaborador && (
+                              <button
+                                onClick={() => handleDeletarVersao(versao.id)}
+                                className="flex items-center justify-center gap-1.5 text-xs text-red-700 bg-white hover:bg-red-50 border border-red-200 px-4 py-2.5 rounded-md font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap flex-1 sm:flex-none"
+                              >
+                                Excluir Versão
+                              </button>
+                            )}
                           </div>
                         </div>
 
@@ -425,7 +476,7 @@ function Dataset() {
                     )}
                   </div>
                 )
-              })
+               biographical })
             ) : (
               <p className="text-sm text-gray-400 text-center py-8 bg-white rounded-lg border border-[#d0d7de]">
                 Versões não encontradas.

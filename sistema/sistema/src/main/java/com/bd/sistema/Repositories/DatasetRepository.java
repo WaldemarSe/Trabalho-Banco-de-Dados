@@ -65,6 +65,11 @@ public class DatasetRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
+    public int deletarPorId(Long id) {
+        String sql = "DELETE FROM feature_store.dataset WHERE id = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+
     private static class DatasetRowMapper implements RowMapper<Dataset> {
         @Override
         public Dataset mapRow(ResultSet rs, int rowNum) throws SQLException {

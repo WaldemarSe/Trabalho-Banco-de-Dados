@@ -52,6 +52,11 @@ public class DatasetVersaoRepository {
         }, idVersao);
     }
 
+    public int deletarPorId(Long id) {
+        String sql = "DELETE FROM feature_store.dataset_versao WHERE id = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+
     private static class DatasetVersaoRowMapper implements RowMapper<DatasetVersao> {
         @Override
         public DatasetVersao mapRow(ResultSet rs, int rowNum) throws SQLException {

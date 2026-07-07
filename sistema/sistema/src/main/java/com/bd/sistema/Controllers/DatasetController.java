@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
@@ -141,7 +142,6 @@ public class DatasetController {
             int datasetIdGerado = datasetRepository.save(novoDataset); 
             novoDataset.setId(datasetIdGerado);
 
-            // 3. Monta a Versão Inicial
             DatasetVersao versaoInicial = new DatasetVersao();
             versaoInicial.setNumVersao(form.numVersao());
             versaoInicial.setDescricaoModificacoes(form.descricaoModificacoes());
@@ -158,19 +158,16 @@ public class DatasetController {
                 for (int i = 0; i < form.featureNome().size(); i++) {
                     String nomeFeat = form.featureNome().get(i);
                     
-                    // Validação simples para ignorar linhas enviadas em branco
                     if (nomeFeat == null || nomeFeat.isBlank()) {
                         continue;
                     }
 
-                    // Instancia o seu modelo Feature.java
                     Feature novaFeature = new Feature();
                     novaFeature.setNome(nomeFeat);
                     novaFeature.setTipo(form.featureTipo().get(i));
                     novaFeature.setDescricao(form.featureDescricao().get(i));
                     novaFeature.setVersaoDataset(versaoInicial); // Vincula à versão base
 
-                    // Salva usando o seu FeatureRepository.java original
                     featureRepository.save(novaFeature);
                 }
             }
@@ -270,17 +267,14 @@ public class DatasetController {
     @GetMapping("/{id}/relatorio")
     public ResponseEntity<?> obterRelatorioDataset(@PathVariable("id") int datasetId) {
         try {
-            // 1. Coleta os dados mastigados do banco de dados
             List<Map<String, Object>> dadosGrafico = visualizacaoRepository.buscarDadosGrafico(datasetId);
             List<Map<String, Object>> dadosTabela = visualizacaoRepository.buscarDadosTabela(datasetId);
 
-            // 2. Estrutura o objeto JSON unificado combinando as duas coleções
             Map<String, Object> respostaRelatorio = Map.of(
                 "dadosGrafico", dadosGrafico,
                 "dadosTabela", dadosTabela
             );
 
-            // 3. Retorna com status OK (200) para o React
             return ResponseEntity.ok(respostaRelatorio);
 
         } catch (Exception e) {
@@ -303,6 +297,28 @@ public class DatasetController {
         } catch (Exception e) {
             Map<String, String> erro = new HashMap<>();
             erro.put("message", "Erro ao processar o relatório do admin.");
+            return ResponseEntity.status(500).body(erro);
+        }
+    }
+
+    @DeleteMapping("/{id}/deletar")
+    public ResponseEntity<?> deletarDataset(@PathVariable Long id) {
+        try {
+            int linhasAfetadas = datasetRepository.deletarPorId(id);
+            
+            if (linhasAfetadas == 0) {
+                Map<String, String> resposta = new HashMap<>();
+                resposta.put("message", "Dataset não encontrado.");
+                return ResponseEntity.status(404).body(resposta);
+            }
+
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("message", "Dataset e todas as suas dependências foram removidos com sucesso.");
+            return ResponseEntity.ok(resposta);
+            
+        } catch (Exception e) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("message", "Erro interno ao tentar remover o dataset.");
             return ResponseEntity.status(500).body(erro);
         }
     }

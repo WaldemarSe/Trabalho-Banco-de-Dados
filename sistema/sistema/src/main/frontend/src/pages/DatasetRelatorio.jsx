@@ -97,7 +97,7 @@ function DatasetRelatorio() {
             ‹ Voltar para o Dataset
           </Link>
           <h1 className="text-2xl font-bold mt-2 text-[#1f2328]">Acessos do Dataset</h1>
-          <p className="text-xs text-gray-500">Métricas consolidadas de visualizações e downloads no período de 08/06/2026 até Hoje.</p>
+          <p className="text-xs text-gray-500">Visualizações e downloads no período de 08/06/2026 até hoje.</p>
         </div>
 
         {erro && (

@@ -31,6 +31,33 @@ function CriarVersao() {
     setUsuario(JSON.parse(usuarioSalvo))
   }, [navigate])
 
+  // 🔥 Novo useEffect: Carrega automaticamente as features da versão base caso ela exista
+  useEffect(() => {
+    const carregarFeaturesVersaoBase = async () => {
+      if (!baseId) return
+      try {
+        setCarregando(true)
+        const response = await axios.get(`${API_URL}/dataset/versao/${baseId}/features`)
+        
+        // Mapeia o retorno do banco para o formato esperado pelo estado da tabela
+        const featuresHerdadas = (response.data || []).map(f => ({
+          nome: f.nome || '',
+          tipo: f.tipo_dado || f.tipo || '', // Trata as duas nomenclaturas comuns
+          descricao: f.descricao || ''
+        }))
+        
+        setFeatures(featuresHerdadas)
+      } catch (err) {
+        console.error('Erro ao herdar features da versão base:', err)
+        setErro('Não foi possível herdar o dicionário de dados da versão de origem.')
+      } finally {
+        setCarregando(false)
+      }
+    }
+
+    carregarFeaturesVersaoBase()
+  }, [baseId])
+
   const handleLogout = () => {
     localStorage.removeItem('usuarioLogado')
     navigate('/login')
@@ -144,7 +171,7 @@ function CriarVersao() {
             ‹ Voltar
           </Link>
           <h1 className="text-2xl font-bold mt-2 text-[#1f2328]">Nova Versão do Dataset</h1>
-          <p className="text-xs text-gray-500">Crie um incremento na árvore de linhagem do dado e documente as mudanças.</p>
+          <p className="text-xs text-gray-500">Crie um incremento na árvore de lineage do dado e documente as mudanças.</p>
         </div>
 
         {erro && (
@@ -221,8 +248,8 @@ function CriarVersao() {
           <div className="flex flex-col gap-3 mt-2 border-t border-gray-100 pt-5">
             <div className="flex justify-between items-center flex-wrap gap-2 px-1">
               <div>
-                <h3 className="text-sm font-bold text-slate-800">Dicionário de Novas Features (Opcional)</h3>
-                <p className="text-xs text-gray-400">Mapeie as novas colunas ou alterações de metadados contidos neste CSV.</p>
+                <h3 className="text-sm font-bold text-slate-800">Dicionário de Features da Versão</h3>
+                <p className="text-xs text-gray-400">Gerencie as features herdadas da versão base ou crie novas colunas contidas no CSV.</p>
               </div>
               <button
                 type="button" 
@@ -294,7 +321,7 @@ function CriarVersao() {
               </div>
             ) : (
               <div className="text-center p-6 border border-dashed border-gray-200 rounded-lg bg-slate-50/50 text-xs text-gray-400 italic">
-                Nenhuma feature mapeada nesta versão ainda. Se houverem colunas novas, utilize o botão acima para documentá-las.
+                Nenhuma feature mapeada nesta versão ainda. Se houverem colunas novas ou herdadas, utilize o botão acima para documentá-las.
               </div>
             )}
           </div>

@@ -28,7 +28,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+
 import com.bd.sistema.dto.VersaoDTO;
+
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -164,6 +169,42 @@ public class DatasetVersaoController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erro ao registrar a visualização."));
+        }
+    }
+
+    @GetMapping("/{versaoId}/features")
+    public ResponseEntity<?> obterFeaturesDaVersaoBase(@PathVariable Long versaoId) {
+        try {
+            // Busca as features associadas a versão base
+            List<Map<String, Object>> features = featureRepository.buscarFeaturesPorVersaoId(versaoId);
+            
+            return ResponseEntity.ok(features);
+        } catch (Exception e) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("message", "Erro ao buscar as features da versão base.");
+            return ResponseEntity.status(500).body(erro);
+        }
+    }
+
+    @DeleteMapping("/{id}/deletar")
+    public ResponseEntity<?> deletarVersao(@PathVariable Long id) {
+        try {
+            int linhasAfetadas = datasetVersaoRepository.deletarPorId(id);
+            
+            if (linhasAfetadas == 0) {
+                Map<String, String> resposta = new HashMap<>();
+                resposta.put("message", "Versão não encontrada.");
+                return ResponseEntity.status(404).body(resposta);
+            }
+
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("message", "Versão deletada com sucesso.");
+            return ResponseEntity.ok(resposta);
+            
+        } catch (Exception e) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("message", "Erro ao deletar a versão do dataset.");
+            return ResponseEntity.status(500).body(erro);
         }
     }
 }

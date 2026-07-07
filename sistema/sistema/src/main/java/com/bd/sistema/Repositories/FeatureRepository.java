@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class FeatureRepository { 
@@ -31,6 +32,15 @@ public class FeatureRepository {
         
         return jdbcTemplate.query(sql, new FeatureRowMapper(), idVersao);
     }
+
+    public List<Map<String, Object>> buscarFeaturesPorVersaoId(Long versaoBaseId) {
+    String sql = "SELECT id, nome, tipo, descricao " +
+                 "FROM feature_store.feature " +
+                 "WHERE versao_dataset_id = ? " +
+                 "ORDER BY nome ASC";
+                 
+    return jdbcTemplate.queryForList(sql, versaoBaseId);
+}
 
     private static class FeatureRowMapper implements RowMapper<Feature> {
         @Override
