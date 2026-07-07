@@ -20,9 +20,9 @@ public class FeatureRepository {
     private JdbcTemplate jdbcTemplate;
     
     public int save(Feature feature) {
-        String sql = "INSERT INTO feature_store.feature (versao_dataset_id, nome, descricao) " + 
-                     "VALUES (?, ?, ?) RETURNING id";
-        return jdbcTemplate.queryForObject(sql, Integer.class, feature.getVersaoDataset().getId(), feature.getNome(), feature.getDescricao());
+        String sql = "INSERT INTO feature_store.feature (versao_dataset_id, nome, descricao, tipo) " + 
+                     "VALUES (?, ?, ?, ?) RETURNING id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, feature.getVersaoDataset().getId(), feature.getNome(), feature.getDescricao(), feature.getTipo());
     }
 
     public List<Feature> buscarFeaturesPorIdVersao(int idVersao) {
@@ -39,6 +39,7 @@ public class FeatureRepository {
             feature.setId(rs.getInt("id"));
             feature.setNome(rs.getString("nome"));
             feature.setDescricao(rs.getString("descricao"));
+            feature.setTipo(rs.getString("tipo"));
             return feature;
         }
     }

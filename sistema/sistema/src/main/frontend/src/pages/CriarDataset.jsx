@@ -7,17 +7,19 @@ function CriarDataset() {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
   
-  // Estados do Formulário
+  // Estados do Formulário do Dataset
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [fontes, setFontes] = useState('')
   const [ePrivado, setEPrivado] = useState(false)
-  
 
   // Estados da Versão Inicial Padrão
   const [numVersao, setNumVersao] = useState('v1.0')
   const [descricaoModificacoes, setDescricaoModificacoes] = useState('Criação inicial do dataset')
   const [arquivo, setArquivo] = useState(null)
+
+  // 🔥 NOVO: Estado para armazenar a lista dinâmica de features mapeadas
+  const [features, setFeatures] = useState([])
 
   // Estados de controle da tela
   const [carregando, setCarregando] = useState(false)
@@ -43,6 +45,21 @@ function CriarDataset() {
     }
   }
 
+  // 🔥 Funções de manipulação dinâmica da tabela de features
+  const adicionarLinhaFeature = () => {
+    setFeatures([...features, { nome: '', tipo: '', descricao: '' }])
+  }
+
+  const removerLinhaFeature = (indexParaRemover) => {
+    setFeatures(features.filter((_, index) => index !== indexParaRemover))
+  }
+
+  const atualizarCampoFeature = (index, campo, valor) => {
+    const novasFeatures = [...features]
+    novasFeatures[index][campo] = valor
+    setFeatures(novasFeatures)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErro(null)
@@ -55,7 +72,6 @@ function CriarDataset() {
     try {
       setCarregando(true)
 
-      // O SEGREDO: Criar um FormData para conseguir enviar o arquivo junto com os textos
       const formData = new FormData()
       formData.append('nome', nome)
       formData.append('descricao', descricao)
@@ -63,22 +79,30 @@ function CriarDataset() {
       formData.append('ePrivado', ePrivado)
       formData.append('numVersao', numVersao)
       formData.append('descricaoModificacoes', descricaoModificacoes)
-      formData.append('arquivo', arquivo) // O arquivo CSV binário
-      formData.append('contaId', usuario.id) // Vincula quem está criando
+      formData.append('arquivo', arquivo) 
+      formData.append('contaId', usuario.id)
 
-      // Enviamos com o cabeçalho correto para upload de arquivos
+      // 🔥 NOVO: Insere as listas paralelas de features no FormData para o Spring Boot capturar
+      features.forEach((feat) => {
+        // Envia apenas se o nome da feature estiver preenchido para evitar lixo no banco
+        if (feat.nome.trim()) {
+          formData.append('featureNome', feat.nome.trim())
+          formData.append('featureTipo', feat.tipo.trim() || 'VARCHAR') // Default caso deixem em branco
+          formData.append('featureDescricao', feat.descricao.trim())
+        }
+      })
+
       await axios.post(`${API_URL}/dataset/criar`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
 
-      // Se deu certo, volta para a home para ver o novo dataset na lista!
       navigate('/home')
 
     } catch (err) {
       console.error('Erro ao criar dataset:', err)
-      setErro(err.response?.data?.message || 'Erro ao salvar o dataset e a versão no banco de dados.')
+      setErro(err.response?.data?.message || 'Erro ao salvar o dataset, versão e features no banco.')
     } finally {
       setCarregando(false)
     }
@@ -115,10 +139,10 @@ function CriarDataset() {
         )}
       </header>
 
-      <main className="flex-1 max-w-200 w-full mx-auto px-4 py-8 flex flex-col gap-4">
+      <main className="flex-1 max-w-220 w-full mx-auto px-4 py-8 flex flex-col gap-4">
         <div>
           <Link to="/home" className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
-            Voltar
+            ‹ Voltar
           </Link>
           <h1 className="text-2xl font-bold mt-2 text-[#1f2328]">Cadastrar Novo Dataset</h1>
           <p className="text-xs text-gray-500">Crie um repositório de dados e defina sua primeira versão de features.</p>
@@ -134,7 +158,6 @@ function CriarDataset() {
           
           {/* SEÇÃO 1: DADOS DO DATASET */}
           <div className="flex flex-col gap-4">
-            
             <div className="flex flex-col gap-1">
               <label className="text-sm font-semibold text-slate-700">Nome do Dataset *</label>
               <input 
@@ -183,8 +206,8 @@ function CriarDataset() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 mt-2">
-
+          {/* SEÇÃO 2: DADOS DA VERSÃO */}
+          <div className="flex flex-col gap-4 mt-2 border-t border-gray-100 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-1 md:col-span-1">
                 <label className="text-sm font-semibold text-slate-700">Número da Versão *</label>
@@ -228,7 +251,7 @@ function CriarDataset() {
                 </div>
                 
                 {arquivo && (
-                  <div className="mt-2 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 animate-fade-in">
+                  <div className="mt-2 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-md flex items-center gap-1.5">
                     ✓ {arquivo.name} ({(arquivo.size / 1024).toFixed(1)} KB)
                   </div>
                 )}
@@ -236,6 +259,89 @@ function CriarDataset() {
             </div>
           </div>
 
+          {/* 🔥 SEÇÃO 3: MAPEAMENTO DE FEATURES EM TABELA DINÂMICA */}
+          <div className="flex flex-col gap-3 mt-2 border-t border-gray-100 pt-5">
+            <div className="flex justify-between items-center flex-wrap gap-2 px-1">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Dicionário de Features (Opcional)</h3>
+                <p className="text-xs text-gray-400">Mapeie o nome, tipo e a utilidade de cada coluna contida no arquivo CSV.</p>
+              </div>
+              <button
+                type="button" // 💡 Fundamental para NÃO submeter o formulário ao clicar
+                onClick={adicionarLinhaFeature}
+                className="text-xs font-bold bg-[#00a2ed] text-white hover:bg-[#0089ca] px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer shadow-3xs"
+              >
+                <span className="text-base font-normal">+</span> Adicionar Feature
+              </button>
+            </div>
+
+            {features.length > 0 ? (
+              <div className="w-full overflow-x-auto rounded-lg border border-[#d0d7de] bg-white shadow-3xs">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-100/80 border-b border-[#d0d7de] text-gray-500 font-bold uppercase tracking-wider">
+                      <th className="p-3 w-1/4">Nome da Feature *</th>
+                      <th className="p-3 w-1/5">Tipo</th>
+                      <th className="p-3 w-2/4">Descrição</th>
+                      <th className="p-2 w-12 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {features.map((feature, index) => (
+                      <tr key={index} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ex: idade_cliente"
+                            value={feature.nome}
+                            onChange={(e) => atualizarCampoFeature(index, 'nome', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 font-mono text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            placeholder="Ex: INT, FLOAT, VARCHAR"
+                            value={feature.tipo}
+                            onChange={(e) => atualizarCampoFeature(index, 'tipo', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 font-mono text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white uppercase"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            placeholder="Ex: Idade calculada a partir da data de nascimento"
+                            value={feature.descricao}
+                            onChange={(e) => atualizarCampoFeature(index, 'descricao', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white"
+                          />
+                        </td>
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removerLinhaFeature(index)}
+                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                            title="Remover linha"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center p-6 border border-dashed border-gray-200 rounded-lg bg-slate-50/50 text-xs text-gray-400 italic">
+                Nenhuma feature cadastrada. Clique no botão acima caso deseje documentar as colunas dessa versão.
+              </div>
+            )}
+          </div>
+
+          {/* BOTÕES DE AÇÃO */}
           <div className="border-t border-gray-100 pt-4 flex justify-end gap-3">
             <Link 
               to="/home" 

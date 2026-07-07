@@ -19,6 +19,9 @@ function CriarVersao() {
   const [descricaoModificacoes, setDescricaoModificacoes] = useState('')
   const [arquivo, setArquivo] = useState(null)
 
+  // 🔥 NOVO: Estado para armazenar a lista dinâmica de novas features mapeadas nesta versão
+  const [features, setFeatures] = useState([])
+
   // Estados de controle
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
@@ -41,6 +44,21 @@ function CriarVersao() {
     if (e.target.files.length > 0) {
       setArquivo(e.target.files[0])
     }
+  }
+
+  // 🔥 Funções de manipulação dinâmica da tabela de features
+  const adicionarLinhaFeature = () => {
+    setFeatures([...features, { nome: '', tipo: '', descricao: '' }])
+  }
+
+  const removerLinhaFeature = (indexParaRemover) => {
+    setFeatures(features.filter((_, index) => index !== indexParaRemover))
+  }
+
+  const atualizarCampoFeature = (index, campo, valor) => {
+    const novasFeatures = [...features]
+    novasFeatures[index][campo] = valor
+    setFeatures(novasFeatures)
   }
 
   const handleSubmit = async (e) => {
@@ -67,10 +85,19 @@ function CriarVersao() {
         formData.append('versaoBaseId', baseId)
       }
 
-      // Altere o endpoint abaixo para bater com a sua nova rota de criação de versão no Spring
+      features.forEach((feat) => {
+        // Envia apenas se o nome da feature estiver preenchido para evitar lixo no banco
+        if (feat.nome.trim()) {
+          formData.append('featureNome', feat.nome.trim())
+          formData.append('featureTipo', feat.tipo.trim() || 'VARCHAR') // Default caso deixem em branco
+          formData.append('featureDescricao', feat.descricao.trim())
+        }
+      })
+
+      // Envia os dados para a sua rota ajustada no Spring
       await axios.post(`${API_URL}/dataset/versao/nova`, formData, {
         headers: {
-            'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data'
         }
       })
 
@@ -118,12 +145,14 @@ function CriarVersao() {
       </header>
 
       {/* ── CORPO DO FORMULÁRIO ── */}
-      <main className="flex-1 max-w-200 w-full mx-auto px-4 py-8 flex flex-col gap-4">
+      {/* 💡 Ajustado de max-w-200 para max-w-220 para acomodar a tabela perfeitamente */}
+      <main className="flex-1 max-w-220 w-full mx-auto px-4 py-8 flex flex-col gap-4">
         <div>
           <Link to={`/dataset/${id}`} className="text-xs font-semibold text-[#0969da] hover:underline flex items-center gap-1">
-            Voltar
+            ‹ Voltar
           </Link>
           <h1 className="text-2xl font-bold mt-2 text-[#1f2328]">Nova Versão do Dataset</h1>
+          <p className="text-xs text-gray-500">Crie um incremento na árvore de linhagem do dado e documente as mudanças.</p>
         </div>
 
         {erro && (
@@ -195,6 +224,88 @@ function CriarVersao() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* 🔥 NOVO: MAPEAMENTO DE FEATURES EM TABELA DINÂMICA */}
+          <div className="flex flex-col gap-3 mt-2 border-t border-gray-100 pt-5">
+            <div className="flex justify-between items-center flex-wrap gap-2 px-1">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Dicionário de Novas Features (Opcional)</h3>
+                <p className="text-xs text-gray-400">Mapeie as novas colunas ou alterações de metadados contidos neste CSV.</p>
+              </div>
+              <button
+                type="button" // 💡 Evita que submeta o form principal acidentalmente
+                onClick={adicionarLinhaFeature}
+                className="text-xs font-bold bg-[#00a2ed] text-white hover:bg-[#0089ca] px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer shadow-3xs"
+              >
+                <span className="text-base font-normal">+</span> Adicionar Feature
+              </button>
+            </div>
+
+            {features.length > 0 ? (
+              <div className="w-full overflow-x-auto rounded-lg border border-[#d0d7de] bg-white shadow-3xs">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-100/80 border-b border-[#d0d7de] text-gray-500 font-bold uppercase tracking-wider">
+                      <th className="p-3 w-1/4">Nome da Feature *</th>
+                      <th className="p-3 w-1/5">Tipo</th>
+                      <th className="p-3 w-2/4">Descrição</th>
+                      <th className="p-2 w-12 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {features.map((feature, index) => (
+                      <tr key={index} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ex: score_credito"
+                            value={feature.nome}
+                            onChange={(e) => atualizarCampoFeature(index, 'nome', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 font-mono text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            placeholder="Ex: INT, FLOAT, VARCHAR"
+                            value={feature.tipo}
+                            onChange={(e) => atualizarCampoFeature(index, 'tipo', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 font-mono text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white uppercase"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            placeholder="Ex: Pontuação do cliente calculada pela API externa"
+                            value={feature.descricao}
+                            onChange={(e) => atualizarCampoFeature(index, 'descricao', e.target.value)}
+                            className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-xs focus:border-[#00a2ed] focus:outline-hidden bg-white"
+                          />
+                        </td>
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removerLinhaFeature(index)}
+                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                            title="Remover linha"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center p-6 border border-dashed border-gray-200 rounded-lg bg-slate-50/50 text-xs text-gray-400 italic">
+                Nenhuma feature mapeada nesta versão ainda. Se houverem colunas novas, utilize o botão acima para documentá-las.
+              </div>
+            )}
           </div>
 
           {/* BOTÕES DE SUBMIT */}

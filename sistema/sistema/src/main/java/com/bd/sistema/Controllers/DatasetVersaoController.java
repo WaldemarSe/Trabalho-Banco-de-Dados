@@ -14,10 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.bd.sistema.Models.Dataset;
 import com.bd.sistema.Models.DatasetVersao;
 import com.bd.sistema.Models.Usuario;
+import com.bd.sistema.Models.Feature;
 import com.bd.sistema.Repositories.DatasetRepository;
 import com.bd.sistema.Repositories.DatasetVersaoRepository;
 import com.bd.sistema.Repositories.VisualizacaoRepository;
 import com.bd.sistema.Repositories.DownloadRepository;
+import com.bd.sistema.Repositories.FeatureRepository;
 
 import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpSession;
@@ -45,6 +47,9 @@ public class DatasetVersaoController {
 
     @Autowired
     VisualizacaoRepository visualizacaoRepository;
+
+    @Autowired
+    FeatureRepository featureRepository;
 
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> baixarCsv(@PathVariable("id") int id, @RequestParam("contaId") int contaId) { 
@@ -111,7 +116,29 @@ public class DatasetVersaoController {
                 novaVersao.setVersaoBase(null);
             }
 
-            datasetVersaoRepository.save(novaVersao);
+            int versaoId = datasetVersaoRepository.save(novaVersao);
+            novaVersao.setId(versaoId);
+
+            if (form.featureNome() != null && !form.featureNome().isEmpty()) {
+                for (int i = 0; i < form.featureNome().size(); i++) {
+                    String nomeFeat = form.featureNome().get(i);
+                    
+                    // Validação simples para ignorar linhas enviadas em branco
+                    if (nomeFeat == null || nomeFeat.isBlank()) {
+                        continue;
+                    }
+
+                    // Instancia o seu modelo Feature.java
+                    Feature novaFeature = new Feature();
+                    novaFeature.setNome(nomeFeat);
+                    novaFeature.setTipo(form.featureTipo().get(i));
+                    novaFeature.setDescricao(form.featureDescricao().get(i));
+                    novaFeature.setVersaoDataset(novaVersao); // Vincula à versão base
+
+                    // Salva usando o seu FeatureRepository.java original
+                    featureRepository.save(novaFeature);
+                }
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("message", "Nova versão registrada com sucesso!"));

@@ -30,6 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import java.util.Map;
 import com.bd.sistema.dto.IdUsuarioDTO;
+import com.bd.sistema.dto.FeatureDTO;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
@@ -140,7 +141,29 @@ public class DatasetController {
             versaoInicial.setVersaoBase(null);
 
             // Salva a versão no banco
-            datasetVersaoRepository.save(versaoInicial);
+            int idVersaoCriada = datasetVersaoRepository.save(versaoInicial);
+            versaoInicial.setId(idVersaoCriada);
+
+            if (form.featureNome() != null && !form.featureNome().isEmpty()) {
+                for (int i = 0; i < form.featureNome().size(); i++) {
+                    String nomeFeat = form.featureNome().get(i);
+                    
+                    // Validação simples para ignorar linhas enviadas em branco
+                    if (nomeFeat == null || nomeFeat.isBlank()) {
+                        continue;
+                    }
+
+                    // Instancia o seu modelo Feature.java
+                    Feature novaFeature = new Feature();
+                    novaFeature.setNome(nomeFeat);
+                    novaFeature.setTipo(form.featureTipo().get(i));
+                    novaFeature.setDescricao(form.featureDescricao().get(i));
+                    novaFeature.setVersaoDataset(versaoInicial); // Vincula à versão base
+
+                    // Salva usando o seu FeatureRepository.java original
+                    featureRepository.save(novaFeature);
+                }
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Dataset e versão criados com sucesso!"));
 

@@ -8,6 +8,8 @@ public class Feature {
 
     private String descricao;
 
+    private String tipo;
+
     private DatasetVersao versaoDataset;
 
     public int getId() {
@@ -40,5 +42,13 @@ public class Feature {
 
     public void setVersaoDataset(DatasetVersao versaoDataset) {
         this.versaoDataset = versaoDataset;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 }

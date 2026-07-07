@@ -1,6 +1,8 @@
 package com.bd.sistema.dto;
 
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 public record DatasetDTO(String nome, String descricao, String fontes, boolean ePrivado, int contaId, 
-                         String numVersao, String descricaoModificacoes, MultipartFile arquivo) {}
+                         String numVersao, String descricaoModificacoes, MultipartFile arquivo,
+                         List<String> featureNome, List<String> featureTipo, List<String> featureDescricao) {}
