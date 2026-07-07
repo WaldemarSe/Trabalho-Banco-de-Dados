@@ -12,6 +12,7 @@ import Home from './pages/Home'
 import Dataset from './pages/Dataset'
 import CriarDataset from './pages/CriarDataset'
 import CriarVersao from './pages/CriarVersao'
+import DatasetRelatorio from './pages/DatasetRelatorio' 
 
 function App() {
 
@@ -22,9 +23,10 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/dataset/:id" element={<Dataset />} />
         <Route path="/dataset/novo" element={<CriarDataset />} />
         <Route path="/dataset/:id/versao/nova" element={<CriarVersao />} />
+        <Route path="/dataset/:id/relatorio" element={<DatasetRelatorio />} />
+        <Route path="/dataset/:id" element={<Dataset />} />
       </Routes>
     </BrowserRouter>
   )

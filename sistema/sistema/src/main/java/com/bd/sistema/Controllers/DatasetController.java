@@ -21,6 +21,7 @@ import com.bd.sistema.Repositories.DatasetVersaoRepository;
 import com.bd.sistema.Repositories.TrabalhaEmRepository;
 import com.bd.sistema.Repositories.ConviteRepository;
 import com.bd.sistema.Repositories.UsuarioRepository;
+import com.bd.sistema.Repositories.VisualizacaoRepository;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,6 +59,9 @@ public class DatasetController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private VisualizacaoRepository visualizacaoRepository;
 
     @GetMapping("/detalhes/{id}")
     public ResponseEntity<?> mostrarDetalhesDataset(@PathVariable("id") int id) {
@@ -254,6 +258,29 @@ public class DatasetController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "Erro ao processar resposta do convite."));
+        }
+    }
+
+    @GetMapping("/{id}/relatorio")
+    public ResponseEntity<?> obterRelatorioDataset(@PathVariable("id") int datasetId) {
+        try {
+            // 1. Coleta os dados mastigados do banco de dados
+            List<Map<String, Object>> dadosGrafico = visualizacaoRepository.buscarDadosGrafico(datasetId);
+            List<Map<String, Object>> dadosTabela = visualizacaoRepository.buscarDadosTabela(datasetId);
+
+            // 2. Estrutura o objeto JSON unificado combinando as duas coleções
+            Map<String, Object> respostaRelatorio = Map.of(
+                "dadosGrafico", dadosGrafico,
+                "dadosTabela", dadosTabela
+            );
+
+            // 3. Retorna com status OK (200) para o React
+            return ResponseEntity.ok(respostaRelatorio);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro interno ao processar os dados analíticos do relatório."));
         }
     }
 }

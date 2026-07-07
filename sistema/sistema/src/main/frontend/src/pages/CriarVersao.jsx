@@ -46,7 +46,6 @@ function CriarVersao() {
     }
   }
 
-  // 🔥 Funções de manipulação dinâmica da tabela de features
   const adicionarLinhaFeature = () => {
     setFeatures([...features, { nome: '', tipo: '', descricao: '' }])
   }
