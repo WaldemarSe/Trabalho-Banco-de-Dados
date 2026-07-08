@@ -31,7 +31,6 @@ function CriarVersao() {
     setUsuario(JSON.parse(usuarioSalvo))
   }, [navigate])
 
-  // 🔥 Novo useEffect: Carrega automaticamente as features da versão base caso ela exista
   useEffect(() => {
     const carregarFeaturesVersaoBase = async () => {
       if (!baseId) return

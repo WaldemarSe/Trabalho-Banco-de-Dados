@@ -173,7 +173,7 @@ public class DatasetVersaoController {
     }
 
     @GetMapping("/{versaoId}/features")
-    public ResponseEntity<?> obterFeaturesDaVersaoBase(@PathVariable Long versaoId) {
+    public ResponseEntity<?> obterFeaturesDaVersaoBase(@PathVariable int versaoId) {
         try {
             // Busca as features associadas a versão base
             List<Map<String, Object>> features = featureRepository.buscarFeaturesPorVersaoId(versaoId);
