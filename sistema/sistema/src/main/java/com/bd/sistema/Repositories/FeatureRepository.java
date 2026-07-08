@@ -33,7 +33,7 @@ public class FeatureRepository {
         return jdbcTemplate.query(sql, new FeatureRowMapper(), idVersao);
     }
 
-    public List<Map<String, Object>> buscarFeaturesPorVersaoId(int versaoBaseId) {
+    public List<Map<String, Object>> buscarFeaturesPorVersaoId(Long versaoBaseId) {
     String sql = "SELECT id, nome, tipo, descricao " +
                  "FROM feature_store.feature " +
                  "WHERE versao_dataset_id = ? " +

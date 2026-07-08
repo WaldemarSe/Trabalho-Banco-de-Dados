@@ -20,15 +20,15 @@ public class VisualizacaoRepository {
     // Monta o gráfico de visualizações e downloads
     public List<Map<String, Object>> buscarDadosGrafico(int datasetId) {
         String sql = "SELECT " +
-                     "   TO_CHAR(t.dt_e_hora, 'DD/MM/YYYY') AS \"dataEixo\", " +
-                     "   SUM(CASE WHEN t.origem = 'V' THEN 1 ELSE 0 END) AS \"visualizacoes\", " +
-                     "   SUM(CASE WHEN t.origem = 'D' THEN 1 ELSE 0 END) AS \"downloads\" " +
+                     "  TO_CHAR(t.dt_e_hora, 'DD/MM/YYYY') AS \"dataEixo\", " +
+                     "  SUM(CASE WHEN t.origem = 'V' THEN 1 ELSE 0 END) AS \"visualizacoes\", " +
+                     "  SUM(CASE WHEN t.origem = 'D' THEN 1 ELSE 0 END) AS \"downloads\" " +
                      "FROM ( " +
-                     "   SELECT v.dt_e_hora, 'V' AS origem, v.versao_dataset_id " +
-                     "   FROM feature_store.visualizacao v " +
-                     "   UNION ALL " +
-                     "   SELECT d.dt_e_hora, 'D' AS origem, d.versao_dataset_id " +
-                     "   FROM feature_store.download d " +
+                     "  SELECT v.dt_e_hora, 'V' AS origem, v.versao_dataset_id " +
+                     "  FROM feature_store.visualizacao v " +
+                     "  UNION ALL " +
+                     "  SELECT d.dt_e_hora, 'D' AS origem, d.versao_dataset_id " +
+                     "  FROM feature_store.download d " +
                      ") t " +
                      "JOIN feature_store.dataset_versao dv ON t.versao_dataset_id = dv.id " +
                      "WHERE dv.dataset_id = ? " +
@@ -65,12 +65,12 @@ public class VisualizacaoRepository {
 
     public List<Map<String, Object>> buscarTop5MaisVistos() {
         String sql = "SELECT d.id, d.nome, COUNT(v.id) AS \"quantidade\" " +
-                    "FROM feature_store.dataset d " +
-                    "JOIN feature_store.dataset_versao dv ON d.id = dv.dataset_id " +
-                    "JOIN feature_store.visualizacao v ON dv.id = v.versao_dataset_id " +
-                    "GROUP BY d.id, d.nome " +
-                    "ORDER BY \"quantidade\" DESC " +
-                    "LIMIT 5";
+                     "FROM feature_store.dataset d " +
+                     "JOIN feature_store.dataset_versao dv ON d.id = dv.dataset_id " +
+                     "JOIN feature_store.visualizacao v ON dv.id = v.versao_dataset_id " +
+                     "GROUP BY d.id, d.nome " +
+                     "ORDER BY \"quantidade\" DESC " +
+                     "LIMIT 5";
         return jdbcTemplate.queryForList(sql);
     }
 }
